@@ -66,6 +66,7 @@ typedef bool (*SendRawVecFn)(void* user,
                              const uint8_t* head, uint16_t head_len,
                              const uint8_t* body, uint16_t body_len);
 typedef void (*OnDeliverFn)(void* user, const uint8_t* data, uint16_t len);
+typedef void (*CriticalFn)(void* user);
 
 struct Hooks {
     void* user;
@@ -73,6 +74,8 @@ struct Hooks {
     SendRawFn send_raw;
     SendRawVecFn send_raw_vec;
     OnDeliverFn on_deliver;
+    CriticalFn enter_critical;
+    CriticalFn leave_critical;
 };
 
 class Endpoint {
@@ -101,6 +104,9 @@ public:
     uint16_t GetPendingSend() const;
 
 private:
+    void Lock();
+    void Unlock();
+
     enum : uint8_t {
         kFlagAckOnly = 0x01,
         kFlagSyn = 0x02,

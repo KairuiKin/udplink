@@ -178,6 +178,18 @@ Endpoint::Endpoint()
     memset(&stats_, 0, sizeof(stats_));
 }
 
+void Endpoint::Lock() {
+    if (hooks_.enter_critical) {
+        hooks_.enter_critical(hooks_.user);
+    }
+}
+
+void Endpoint::Unlock() {
+    if (hooks_.leave_critical) {
+        hooks_.leave_critical(hooks_.user);
+    }
+}
+
 void Endpoint::InitAuthKeyRing() {
     for (uint8_t i = 0; i < 2; ++i) {
         auth_keys_[i].used = false;
@@ -217,7 +229,9 @@ bool Endpoint::ResolveAuthKey(uint8_t key_id, uint64_t* k0, uint64_t* k1) const 
 }
 
 bool Endpoint::SetAuthKey(uint8_t key_id, uint64_t key0, uint64_t key1, bool set_as_tx) {
+    Lock();
     if (key_id == 0 || (key0 | key1) == 0ull) {
+        Unlock();
         return false;
     }
     uint8_t idx = 2;
@@ -246,25 +260,31 @@ bool Endpoint::SetAuthKey(uint8_t key_id, uint64_t key0, uint64_t key1, bool set
     if (set_as_tx) {
         tx_key_id_ = key_id;
     }
+    Unlock();
     return true;
 }
 
 bool Endpoint::RotateTxKey(uint8_t key_id) {
+    Lock();
     uint64_t k0 = 0;
     uint64_t k1 = 0;
     if (!ResolveAuthKey(key_id, &k0, &k1)) {
+        Unlock();
         return false;
     }
     (void)k0;
     (void)k1;
     tx_key_id_ = key_id;
+    Unlock();
     return true;
 }
 
 bool Endpoint::ScheduleTxKeyRotation(uint8_t key_id, uint16_t lead_packets) {
+    Lock();
     uint64_t k0 = 0;
     uint64_t k1 = 0;
     if (!ResolveAuthKey(key_id, &k0, &k1)) {
+        Unlock();
         return false;
     }
     (void)k0;
@@ -279,6 +299,7 @@ bool Endpoint::ScheduleTxKeyRotation(uint8_t key_id, uint16_t lead_packets) {
     pending_tx_old_key_id_ = tx_key_id_;
     pending_tx_key_retry_count_ = 0;
     last_key_update_announce_ms_ = 0;
+    Unlock();
     return true;
 }
 
@@ -333,10 +354,13 @@ bool Endpoint::Init(const Config& cfg, const Hooks& hooks) {
 }
 
 bool Endpoint::StartConnect() {
+    Lock();
     if (!initialized_) {
+        Unlock();
         return false;
     }
     if (conn_state_ == ConnectionState::kConnected || conn_state_ == ConnectionState::kConnecting) {
+        Unlock();
         return true;
     }
     conn_state_ = ConnectionState::kConnecting;
@@ -361,14 +385,18 @@ bool Endpoint::StartConnect() {
     last_connect_try_ms_ = now;
     ++stats_.connect_attempts;
     (void)SendControl(kFlagSyn, now, 0, 0);
+    Unlock();
     return true;
 }
 
 void Endpoint::ForceConnectedForTest() {
+    Lock();
     conn_state_ = ConnectionState::kConnected;
+    Unlock();
 }
 
 void Endpoint::Disconnect() {
+    Lock();
     conn_state_ = ConnectionState::kDisconnected;
     has_recv_seq_ = false;
     has_peer_session_id_ = false;
@@ -383,6 +411,7 @@ void Endpoint::Disconnect() {
         send_slots_[i].used = false;
         recv_slots_[i].used = false;
     }
+    Unlock();
 }
 
 bool Endpoint::IsSeqLess(uint16_t a, uint16_t b) const {
@@ -655,13 +684,17 @@ bool Endpoint::SendFrame(PacketSlot* slot, uint32_t now_ms, bool is_retransmit) 
 }
 
 SendStatus Endpoint::Send(const uint8_t* payload, uint16_t len) {
+    Lock();
     if (!initialized_) {
+        Unlock();
         return SendStatus::kQueueFull;
     }
     if (conn_state_ != ConnectionState::kConnected) {
+        Unlock();
         return SendStatus::kNotConnected;
     }
     if (len == 0 || len > cfg_.max_payload) {
+        Unlock();
         return SendStatus::kPayloadTooLarge;
     }
 
@@ -672,11 +705,13 @@ SendStatus Endpoint::Send(const uint8_t* payload, uint16_t len) {
         }
     }
     if (inflight >= cfg_.send_window) {
+        Unlock();
         return SendStatus::kQueueFull;
     }
 
     PacketSlot* slot = AllocateSendSlot();
     if (!slot) {
+        Unlock();
         return SendStatus::kQueueFull;
     }
 
@@ -684,25 +719,32 @@ SendStatus Endpoint::Send(const uint8_t* payload, uint16_t len) {
     ++next_send_seq_;
     if (!BuildDataFrame(slot, seq, payload, len, false)) {
         slot->used = false;
+        Unlock();
         return SendStatus::kPayloadTooLarge;
     }
 
     const uint32_t now = hooks_.now_ms(hooks_.user);
     (void)SendFrame(slot, now, false);
+    Unlock();
     return SendStatus::kOk;
 }
 
 SendStatus Endpoint::SendZeroCopy(const uint8_t* payload, uint16_t len) {
+    Lock();
     if (!initialized_) {
+        Unlock();
         return SendStatus::kQueueFull;
     }
     if (conn_state_ != ConnectionState::kConnected) {
+        Unlock();
         return SendStatus::kNotConnected;
     }
     if (hooks_.send_raw_vec == 0) {
+        Unlock();
         return SendStatus::kUnsupported;
     }
     if (len == 0 || len > cfg_.max_payload) {
+        Unlock();
         return SendStatus::kPayloadTooLarge;
     }
 
@@ -713,11 +755,13 @@ SendStatus Endpoint::SendZeroCopy(const uint8_t* payload, uint16_t len) {
         }
     }
     if (inflight >= cfg_.send_window) {
+        Unlock();
         return SendStatus::kQueueFull;
     }
 
     PacketSlot* slot = AllocateSendSlot();
     if (!slot) {
+        Unlock();
         return SendStatus::kQueueFull;
     }
 
@@ -725,11 +769,13 @@ SendStatus Endpoint::SendZeroCopy(const uint8_t* payload, uint16_t len) {
     ++next_send_seq_;
     if (!BuildDataFrame(slot, seq, payload, len, true)) {
         slot->used = false;
+        Unlock();
         return SendStatus::kPayloadTooLarge;
     }
 
     const uint32_t now = hooks_.now_ms(hooks_.user);
     (void)SendFrame(slot, now, false);
+    Unlock();
     return SendStatus::kOk;
 }
 
@@ -873,7 +919,6 @@ void Endpoint::HandleControl(uint8_t flags, uint32_t sender_session_id, uint32_t
                 (void)SendControl(static_cast<uint8_t>(kFlagAckOnly | kFlagKeyUpdateAck), now_ms, ack_payload, 5);
             }
         }
-        (void)SendControl(kFlagAckOnly, now_ms, 0, 0);
     }
     if ((flags & kFlagKeyUpdateAck) != 0u) {
         if (payload_len == 5 && payload != 0) {
@@ -926,16 +971,20 @@ void Endpoint::DrainInOrder() {
 }
 
 void Endpoint::OnUdpPacket(const uint8_t* data, uint16_t len) {
+    Lock();
     if (!initialized_) {
+        Unlock();
         return;
     }
     const uint16_t header_len = kHeaderLen;
     if (len < header_len) {
         ++stats_.rx_dropped;
+        Unlock();
         return;
     }
     if (ReadU16(data + 0) != kMagic) {
         ++stats_.rx_dropped;
+        Unlock();
         return;
     }
 
@@ -956,25 +1005,18 @@ void Endpoint::OnUdpPacket(const uint8_t* data, uint16_t len) {
 
     if (payload_len > cfg_.max_payload || static_cast<uint16_t>(header_len + payload_len) != len) {
         ++stats_.rx_dropped;
+        Unlock();
         return;
     }
     if (session_id == 0) {
         ++stats_.rx_dropped;
+        Unlock();
         return;
     }
     if (nonce == 0) {
         ++stats_.rx_dropped;
+        Unlock();
         return;
-    }
-    if (peer_key_rotation_known_) {
-        if (nonce < peer_key_activate_nonce_ && key_id == peer_next_key_id_) {
-            ++stats_.rx_dropped;
-            return;
-        }
-        if (nonce >= peer_key_activate_nonce_ && key_id != peer_next_key_id_) {
-            ++stats_.rx_dropped;
-            return;
-        }
     }
 
     const uint8_t* payload = data + header_len;
@@ -982,15 +1024,30 @@ void Endpoint::OnUdpPacket(const uint8_t* data, uint16_t len) {
         const uint64_t expected = ComputeAuthTag(data, kHeaderNoTagLen, payload, payload_len, nonce, key_id);
         if (expected == 0) {
             ++stats_.rx_dropped;
+            Unlock();
             return;
         }
         if (expected != auth_tag) {
             ++stats_.rx_dropped;
+            Unlock();
+            return;
+        }
+    }
+    if (peer_key_rotation_known_) {
+        if (nonce < peer_key_activate_nonce_ && key_id == peer_next_key_id_) {
+            ++stats_.rx_dropped;
+            Unlock();
+            return;
+        }
+        if (nonce >= peer_key_activate_nonce_ && key_id != peer_next_key_id_) {
+            ++stats_.rx_dropped;
+            Unlock();
             return;
         }
     }
     if (has_peer_session_id_ && session_id != peer_session_id_) {
         ++stats_.rx_dropped;
+        Unlock();
         return;
     }
 
@@ -1005,6 +1062,7 @@ void Endpoint::OnUdpPacket(const uint8_t* data, uint16_t len) {
         } else {
             ++stats_.rx_dropped;
         }
+        Unlock();
         return;
     }
     if (flags != 0) {
@@ -1013,13 +1071,16 @@ void Endpoint::OnUdpPacket(const uint8_t* data, uint16_t len) {
     }
 
     if ((flags & kFlagAckOnly) != 0u) {
+        Unlock();
         return;
     }
     if (payload_len == 0) {
+        Unlock();
         return;
     }
     if (conn_state_ != ConnectionState::kConnected) {
         ++stats_.rx_dropped;
+        Unlock();
         return;
     }
 
@@ -1032,6 +1093,7 @@ void Endpoint::OnUdpPacket(const uint8_t* data, uint16_t len) {
     ack_dirty_ = true;
 
     DrainInOrder();
+    Unlock();
 }
 
 void Endpoint::FlushAcks(uint32_t now_ms, bool force) {
@@ -1084,7 +1146,9 @@ void Endpoint::MaybeAdjustRto(uint32_t sample_ms) {
 }
 
 void Endpoint::Tick() {
+    Lock();
     if (!initialized_) {
+        Unlock();
         return;
     }
     const uint32_t now = hooks_.now_ms(hooks_.user);
@@ -1162,6 +1226,7 @@ void Endpoint::Tick() {
         if (cfg_.idle_timeout_ms > 0 && (now - last_rx_ms_) >= cfg_.idle_timeout_ms) {
             conn_state_ = ConnectionState::kTimedOut;
             ++stats_.connect_timeouts;
+            Unlock();
             return;
         }
         if (cfg_.heartbeat_ms > 0 && (now - last_tx_ms_) >= cfg_.heartbeat_ms) {
@@ -1190,6 +1255,7 @@ void Endpoint::Tick() {
     }
 
     FlushAcks(now, false);
+    Unlock();
 }
 
 uint16_t Endpoint::GetPendingSend() const {

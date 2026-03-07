@@ -14,6 +14,7 @@ Reliable UDP library for embedded and MCU-class targets (C++11).
   - current time (`now_ms`)
   - raw UDP send (`send_raw`)
   - payload delivery (`on_deliver`)
+- Optional concurrency guard via `enter_critical/leave_critical` callbacks.
 - Selective ACK: cumulative ACK + 32-bit bitmap for out-of-order recovery.
 - Adaptive RTO using RTT + variance estimator.
 - Static slot arrays for TX/RX to keep predictable CPU and memory costs.

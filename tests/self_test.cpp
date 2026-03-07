@@ -100,8 +100,8 @@ int main() {
     cfg.auth_key0 = 0x0706050403020100ull;
     cfg.auth_key1 = 0x0F0E0D0C0B0A0908ull;
 
-    rudp::Hooks ha = {&wire, NowMs, SendA, SendAVec, DeliverA};
-    rudp::Hooks hb = {&wire, NowMs, SendB, SendBVec, DeliverB};
+    rudp::Hooks ha = {&wire, NowMs, SendA, SendAVec, DeliverA, 0, 0};
+    rudp::Hooks hb = {&wire, NowMs, SendB, SendBVec, DeliverB, 0, 0};
     assert(a.Init(cfg, ha));
     assert(b.Init(cfg, hb));
     assert(a.StartConnect());
@@ -194,7 +194,7 @@ int main() {
     }
 
     rudp::Endpoint c;
-    rudp::Hooks hc = {&wire, NowMs, SendA, SendAVec, DeliverA};
+    rudp::Hooks hc = {&wire, NowMs, SendA, SendAVec, DeliverA, 0, 0};
     assert(c.Init(cfg, hc));
     assert(c.StartConnect());
     wire.block_a2b = true;

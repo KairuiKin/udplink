@@ -75,8 +75,8 @@ int main() {
 
     rudp::Endpoint a;
     rudp::Endpoint b;
-    rudp::Hooks ha = {&wire, BNow, BSendA, BSendAVec, BDeliverA};
-    rudp::Hooks hb = {&wire, BNow, BSendB, BSendBVec, BDeliverB};
+    rudp::Hooks ha = {&wire, BNow, BSendA, BSendAVec, BDeliverA, 0, 0};
+    rudp::Hooks hb = {&wire, BNow, BSendB, BSendBVec, BDeliverB, 0, 0};
     if (!a.Init(cfg, ha) || !b.Init(cfg, hb)) {
         puts("bench init failed");
         return 1;
