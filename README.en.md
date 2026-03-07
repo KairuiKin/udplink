@@ -30,7 +30,9 @@ Reliable UDP library for embedded and MCU-class targets (C++11).
 ## Layout
 
 - `include/rudp/rudp.hpp`: public API
+- `include/rudp/manager.hpp`: multi-connection manager API
 - `src/rudp.cpp`: protocol implementation
+- `src/manager.cpp`: connection routing/session manager
 - `tests/self_test.cpp`: packet-loss/reorder simulation test
 
 ## Build
@@ -45,6 +47,7 @@ cmake --build build --config Release
 ```bash
 build/rudp_self_test
 build/rudp_bench
+build/rudp_manager_test
 ```
 
 On Windows, executable is `rudp_self_test.exe`.

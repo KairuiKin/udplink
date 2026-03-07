@@ -27,7 +27,9 @@
 ## 目录
 
 - `include/rudp/rudp.hpp`：公开 API
+- `include/rudp/manager.hpp`：多连接管理层 API
 - `src/rudp.cpp`：协议核心实现
+- `src/manager.cpp`：多连接路由与会话管理
 - `tests/self_test.cpp`：丢包/乱序仿真自测
 
 ## 编译
@@ -42,6 +44,7 @@ cmake --build build --config Release
 ```bash
 build/rudp_self_test
 build/rudp_bench
+build/rudp_manager_test
 ```
 
 Windows 下可执行文件名为 `rudp_self_test.exe`。

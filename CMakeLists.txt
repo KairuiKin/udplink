@@ -5,6 +5,7 @@ option(RUDP_BUILD_TESTS "Build rudp self test" ON)
 
 add_library(rudp STATIC
     src/rudp.cpp
+    src/manager.cpp
 )
 
 target_include_directories(rudp PUBLIC
@@ -22,4 +23,6 @@ if(RUDP_BUILD_TESTS)
     target_link_libraries(rudp_self_test PRIVATE rudp)
     add_executable(rudp_bench tests/bench.cpp)
     target_link_libraries(rudp_bench PRIVATE rudp)
+    add_executable(rudp_manager_test tests/manager_test.cpp)
+    target_link_libraries(rudp_manager_test PRIVATE rudp)
 endif()
