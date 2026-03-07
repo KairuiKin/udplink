@@ -42,6 +42,18 @@ cmake -S . -B build
 cmake --build build --config Release
 ```
 
+## Install and consume
+
+```bash
+cmake -S . -B build -DRUDP_INSTALL=ON -DRUDP_BUILD_TESTS=OFF
+cmake --build build --config Release
+cmake --install build --config Release
+```
+
+- CMake package: `rudpConfig.cmake` + `rudpTargets.cmake`
+- pkg-config: `rudp.pc`
+- Package metadata: `vcpkg.json`, `conanfile.py`
+
 ## Run self test
 
 ```bash

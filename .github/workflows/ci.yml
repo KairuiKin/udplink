@@ -1,0 +1,25 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build -DRUDP_BUILD_TESTS=ON
+      - name: Build
+        run: cmake --build build --config Release
+      - name: Test
+        shell: bash
+        run: |
+          if [ -f build/rudp_self_test ]; then build/rudp_self_test; fi
+          if [ -f build/Release/rudp_self_test.exe ]; then build/Release/rudp_self_test.exe; fi
+          if [ -f build/rudp_manager_test ]; then build/rudp_manager_test; fi
+          if [ -f build/Release/rudp_manager_test.exe ]; then build/Release/rudp_manager_test.exe; fi

@@ -39,6 +39,18 @@ cmake -S . -B build
 cmake --build build --config Release
 ```
 
+## 安装与集成
+
+```bash
+cmake -S . -B build -DRUDP_INSTALL=ON -DRUDP_BUILD_TESTS=OFF
+cmake --build build --config Release
+cmake --install build --config Release
+```
+
+- CMake 包：`rudpConfig.cmake` + `rudpTargets.cmake`
+- pkg-config：`rudp.pc`
+- 包管理元信息：`vcpkg.json`、`conanfile.py`
+
 ## 自测
 
 ```bash
