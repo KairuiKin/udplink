@@ -637,7 +637,12 @@ bool Endpoint::SendControl(uint8_t flags, uint32_t now_ms,
     if (!ConsumePacingBudget(frame_len)) {
         return false;
     }
-    if (!hooks_.send_raw(hooks_.user, frame, frame_len)) {
+    uint8_t tx[kHeaderLen + kMaxFrame];
+    memcpy(tx, frame, frame_len);
+    Unlock();
+    const bool ok = hooks_.send_raw(hooks_.user, tx, frame_len);
+    Lock();
+    if (!ok) {
         return false;
     }
     last_tx_ms_ = now_ms;
@@ -654,26 +659,41 @@ bool Endpoint::SendFrame(PacketSlot* slot, uint32_t now_ms, bool is_retransmit) 
     if (!ConsumePacingBudget(bytes_to_send)) {
         return false;
     }
+    const uint16_t seq = slot->seq;
     bool ok = false;
     if (slot->zero_copy && hooks_.send_raw_vec != 0) {
-        ok = hooks_.send_raw_vec(hooks_.user,
-                                 slot->frame, kHeaderLen,
-                                 slot->ext_payload, slot->payload_len);
+        uint8_t head[kHeaderLen];
+        memcpy(head, slot->frame, kHeaderLen);
+        const uint8_t* body = slot->ext_payload;
+        const uint16_t body_len = slot->payload_len;
+        Unlock();
+        ok = hooks_.send_raw_vec(hooks_.user, head, kHeaderLen, body, body_len);
+        Lock();
     } else {
+        uint8_t tx[kHeaderLen + kMaxFrame];
+        uint16_t tx_len = slot->frame_len;
         if (slot->zero_copy) {
-            if (static_cast<uint16_t>(kHeaderLen + slot->payload_len) > kMaxFrame) {
+            if (static_cast<uint16_t>(kHeaderLen + slot->payload_len) > (kHeaderLen + kMaxFrame)) {
                 return false;
             }
-            memcpy(slot->frame + kHeaderLen, slot->ext_payload, slot->payload_len);
-            slot->frame_len = static_cast<uint16_t>(kHeaderLen + slot->payload_len);
+            memcpy(tx, slot->frame, kHeaderLen);
+            memcpy(tx + kHeaderLen, slot->ext_payload, slot->payload_len);
+            tx_len = static_cast<uint16_t>(kHeaderLen + slot->payload_len);
+        } else {
+            memcpy(tx, slot->frame, tx_len);
         }
-        ok = hooks_.send_raw(hooks_.user, slot->frame, slot->frame_len);
+        Unlock();
+        ok = hooks_.send_raw(hooks_.user, tx, tx_len);
+        Lock();
     }
     if (!ok) {
         return false;
     }
-    slot->last_sent_ms = now_ms;
-    slot->ever_sent = true;
+    PacketSlot* cur = FindSendSlotBySeq(seq);
+    if (cur && cur->used && !cur->acked) {
+        cur->last_sent_ms = now_ms;
+        cur->ever_sent = true;
+    }
     last_tx_ms_ = now_ms;
     if (is_retransmit) {
         ++stats_.tx_retransmits;
@@ -781,13 +801,17 @@ SendStatus Endpoint::SendZeroCopy(const uint8_t* payload, uint16_t len) {
 
 uint32_t Endpoint::BuildAckBits(uint16_t newest) const {
     uint32_t bits = 0;
-    for (uint8_t i = 0; i < 32; ++i) {
-        const uint16_t seq = static_cast<uint16_t>(newest - (i + 1u));
-        for (uint16_t j = 0; j < kMaxQueue; ++j) {
-            if (recv_slots_[j].used && recv_slots_[j].seq == seq) {
-                bits |= (1u << i);
-                break;
-            }
+    for (uint16_t j = 0; j < kMaxQueue; ++j) {
+        if (!recv_slots_[j].used) {
+            continue;
+        }
+        const uint16_t seq = recv_slots_[j].seq;
+        if (!IsSeqLess(seq, newest)) {
+            continue;
+        }
+        const uint16_t d = DistanceFrom(seq, newest);
+        if (d >= 1 && d <= 32) {
+            bits |= (1u << (d - 1u));
         }
     }
     return bits;
@@ -963,10 +987,15 @@ void Endpoint::DrainInOrder() {
         if (!slot) {
             break;
         }
-        hooks_.on_deliver(hooks_.user, slot->data, slot->len);
+        uint8_t tmp[kMaxFrame];
+        const uint16_t n = slot->len;
+        memcpy(tmp, slot->data, n);
         slot->used = false;
         ++recv_next_seq_;
         ++stats_.rx_delivered;
+        Unlock();
+        hooks_.on_deliver(hooks_.user, tmp, n);
+        Lock();
     }
 }
 

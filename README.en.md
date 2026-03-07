@@ -10,7 +10,7 @@ Reliable UDP library for embedded and MCU-class targets (C++11).
 
 ## Core design
 
-- Protocol core is decoupled from socket I/O using three callbacks:
+- Protocol core is decoupled from socket I/O using callbacks:
   - current time (`now_ms`)
   - raw UDP send (`send_raw`)
   - payload delivery (`on_deliver`)
