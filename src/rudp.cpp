@@ -123,8 +123,10 @@ Config DefaultConfig() {
     c.idle_timeout_ms = 6000;
     c.heartbeat_ms = 400;
     c.pacing_bytes_per_tick = 0;
+    c.key_update_retry_ms = 120;
     c.max_retransmits = 15;
     c.max_connect_retries = 20;
+    c.key_update_max_retries = 16;
     c.enable_auth = false;
     c.auth_psk = 0;
     c.auth_key0 = 0;
@@ -161,6 +163,7 @@ Endpoint::Endpoint()
       pending_tx_activate_nonce_(0),
       pending_tx_key_acknowledged_(false),
       pending_tx_old_key_id_(0),
+      pending_tx_key_retry_count_(0),
       last_key_update_announce_ms_(0),
       peer_key_rotation_known_(false),
       peer_next_key_id_(0),
@@ -274,6 +277,7 @@ bool Endpoint::ScheduleTxKeyRotation(uint8_t key_id, uint16_t lead_packets) {
     pending_tx_activate_nonce_ = tx_nonce_counter_ + lead_packets;
     pending_tx_key_acknowledged_ = false;
     pending_tx_old_key_id_ = tx_key_id_;
+    pending_tx_key_retry_count_ = 0;
     last_key_update_announce_ms_ = 0;
     return true;
 }
@@ -316,6 +320,7 @@ bool Endpoint::Init(const Config& cfg, const Hooks& hooks) {
     pending_tx_activate_nonce_ = 0;
     pending_tx_key_acknowledged_ = false;
     pending_tx_old_key_id_ = 0;
+    pending_tx_key_retry_count_ = 0;
     last_key_update_announce_ms_ = 0;
     peer_key_rotation_known_ = false;
     peer_next_key_id_ = 0;
@@ -348,6 +353,7 @@ bool Endpoint::StartConnect() {
     pending_tx_activate_nonce_ = 0;
     pending_tx_key_acknowledged_ = false;
     pending_tx_old_key_id_ = 0;
+    pending_tx_key_retry_count_ = 0;
     last_key_update_announce_ms_ = 0;
     peer_key_rotation_known_ = false;
     peer_next_key_id_ = 0;
@@ -444,7 +450,9 @@ bool Endpoint::BuildDataFrame(PacketSlot* slot, uint16_t seq, const uint8_t* pay
     if (frame_len > cfg_.mtu || frame_len > kMaxFrame) {
         return false;
     }
-    if (pending_tx_key_rotation_ && (tx_nonce_counter_ + 1u) >= pending_tx_activate_nonce_) {
+    if (pending_tx_key_rotation_ &&
+        pending_tx_key_acknowledged_ &&
+        (tx_nonce_counter_ + 1u) >= pending_tx_activate_nonce_) {
         tx_key_id_ = pending_tx_key_id_;
         pending_tx_key_rotation_ = false;
     }
@@ -585,7 +593,9 @@ bool Endpoint::ConsumePacingBudget(uint16_t bytes) {
 
 bool Endpoint::SendControl(uint8_t flags, uint32_t now_ms,
                            const uint8_t* payload, uint16_t payload_len) {
-    if (pending_tx_key_rotation_ && (tx_nonce_counter_ + 1u) >= pending_tx_activate_nonce_) {
+    if (pending_tx_key_rotation_ &&
+        pending_tx_key_acknowledged_ &&
+        (tx_nonce_counter_ + 1u) >= pending_tx_activate_nonce_) {
         tx_key_id_ = pending_tx_key_id_;
         pending_tx_key_rotation_ = false;
     }
@@ -873,6 +883,7 @@ void Endpoint::HandleControl(uint8_t flags, uint32_t sender_session_id, uint32_t
                 ack_key_id == pending_tx_key_id_ &&
                 ack_activate_nonce == pending_tx_activate_nonce_) {
                 pending_tx_key_acknowledged_ = true;
+                pending_tx_key_retry_count_ = 0;
             }
         }
     }
@@ -1077,7 +1088,9 @@ void Endpoint::Tick() {
         return;
     }
     const uint32_t now = hooks_.now_ms(hooks_.user);
-    if (pending_tx_key_rotation_ && (tx_nonce_counter_ + 1u) >= pending_tx_activate_nonce_) {
+    if (pending_tx_key_rotation_ &&
+        pending_tx_key_acknowledged_ &&
+        (tx_nonce_counter_ + 1u) >= pending_tx_activate_nonce_) {
         tx_key_id_ = pending_tx_key_id_;
         pending_tx_key_rotation_ = false;
     }
@@ -1117,14 +1130,32 @@ void Endpoint::Tick() {
 
     if (conn_state_ == ConnectionState::kConnected) {
         if (pending_tx_key_rotation_) {
-            const bool need_announce = (last_key_update_announce_ms_ == 0) ||
-                                       ((now - last_key_update_announce_ms_) >= cfg_.connect_retry_ms);
+            if (!pending_tx_key_acknowledged_ && (tx_nonce_counter_ + 1u) >= pending_tx_activate_nonce_) {
+                pending_tx_activate_nonce_ = (tx_nonce_counter_ + 1u) + 8u;
+                last_key_update_announce_ms_ = 0;
+            }
+            const uint16_t retry_ms = (cfg_.key_update_retry_ms > 0) ? cfg_.key_update_retry_ms : cfg_.connect_retry_ms;
+            const bool need_announce = !pending_tx_key_acknowledged_ &&
+                                       ((last_key_update_announce_ms_ == 0) ||
+                                        ((now - last_key_update_announce_ms_) >= retry_ms));
             if (need_announce) {
                 uint8_t ctrl[5];
                 ctrl[0] = pending_tx_key_id_;
                 WriteU32(ctrl + 1, pending_tx_activate_nonce_);
                 if (SendControl(static_cast<uint8_t>(kFlagAckOnly | kFlagKeyUpdate), now, ctrl, 5)) {
                     last_key_update_announce_ms_ = now;
+                    if (pending_tx_key_retry_count_ < 255) {
+                        ++pending_tx_key_retry_count_;
+                    }
+                    if (cfg_.key_update_max_retries > 0 &&
+                        pending_tx_key_retry_count_ > cfg_.key_update_max_retries) {
+                        pending_tx_key_rotation_ = false;
+                        pending_tx_key_id_ = 0;
+                        pending_tx_activate_nonce_ = 0;
+                        pending_tx_key_acknowledged_ = false;
+                        pending_tx_old_key_id_ = 0;
+                        pending_tx_key_retry_count_ = 0;
+                    }
                 }
             }
         }

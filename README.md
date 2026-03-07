@@ -56,6 +56,7 @@ Windows 下可执行文件名为 `rudp_self_test.exe`。
 7. 手动切换：`SetAuthKey(new_id, k0, k1, false)` 后 `RotateTxKey(new_id)`。
 8. 自动切换：`ScheduleTxKeyRotation(new_id, lead_packets)` 发送带生效点的控制帧。
 9. 协议会自动回 `KEY_UPDATE_ACK`，发送端收到确认后淘汰旧 key。
+10. 若 `KEY_UPDATE_ACK` 超时，发送端会延期激活点并重发；超过重试上限则取消本次换钥。
 
 ## 当前版本限制
 

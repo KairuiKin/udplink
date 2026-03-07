@@ -59,3 +59,4 @@ On Windows, executable is `rudp_self_test.exe`.
 7. Manual switch: `SetAuthKey(new_id, k0, k1, false)` then `RotateTxKey(new_id)`.
 8. Automatic switch: `ScheduleTxKeyRotation(new_id, lead_packets)` with activation point control frame.
 9. Protocol sends `KEY_UPDATE_ACK`; sender retires old key after acknowledgement.
+10. On `KEY_UPDATE_ACK` timeout, sender postpones activation and retries; rotation is canceled after max retries.

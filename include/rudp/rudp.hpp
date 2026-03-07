@@ -50,8 +50,10 @@ struct Config {
     uint16_t idle_timeout_ms;
     uint16_t heartbeat_ms;
     uint16_t pacing_bytes_per_tick;
+    uint16_t key_update_retry_ms;
     uint8_t max_retransmits;
     uint8_t max_connect_retries;
+    uint8_t key_update_max_retries;
     bool enable_auth;
     uint32_t auth_psk;
     uint64_t auth_key0;
@@ -210,6 +212,7 @@ private:
     uint32_t pending_tx_activate_nonce_;
     bool pending_tx_key_acknowledged_;
     uint8_t pending_tx_old_key_id_;
+    uint8_t pending_tx_key_retry_count_;
     uint32_t last_key_update_announce_ms_;
     bool peer_key_rotation_known_;
     uint8_t peer_next_key_id_;
