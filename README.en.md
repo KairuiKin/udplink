@@ -1,36 +1,61 @@
 # udplink
 
-#### Description
-{**When you're done, you can delete the content in this README and update the file with details for others getting started with your repository**}
+Reliable UDP library for embedded and MCU-class targets (C++11).
 
-#### Software Architecture
-Software architecture description
+## Goals
 
-#### Installation
+- Reliable, ordered delivery on top of UDP without full TCP complexity.
+- MCU friendly: fixed memory, no dynamic allocation, no thread requirement.
+- Production-oriented: pluggable network hooks, configurable retransmission/window, runtime stats.
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+## Core design
 
-#### Instructions
+- Protocol core is decoupled from socket I/O using three callbacks:
+  - current time (`now_ms`)
+  - raw UDP send (`send_raw`)
+  - payload delivery (`on_deliver`)
+- Selective ACK: cumulative ACK + 32-bit bitmap for out-of-order recovery.
+- Adaptive RTO using RTT + variance estimator.
+- Static slot arrays for TX/RX to keep predictable CPU and memory costs.
+- Connection lifecycle: `SYN/SYN-ACK` handshake, heartbeat, idle timeout.
+- Optional pacing with `pacing_bytes_per_tick` to control burst pressure on MCU.
+- Session isolation with per-connection `session_id` to prevent packet mix-up.
+- Nonce-based anti-replay sliding window (64 packets).
+- Optional authentication (SipHash-2-4) with `enable_auth` + `auth_key0/auth_key1` (legacy `auth_psk` fallback).
+- Online key rotation with on-wire `key_id` and dual-key verification window.
+- Fast retransmit on duplicate ACK patterns to reduce recovery latency.
+- Zero-copy send path via `SendZeroCopy` + `send_raw_vec`.
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+## Layout
 
-#### Contribution
+- `include/rudp/rudp.hpp`: public API
+- `src/rudp.cpp`: protocol implementation
+- `tests/self_test.cpp`: packet-loss/reorder simulation test
 
-1.  Fork the repository
-2.  Create Feat_xxx branch
-3.  Commit your code
-4.  Create Pull Request
+## Build
 
+```bash
+cmake -S . -B build
+cmake --build build --config Release
+```
 
-#### Gitee Feature
+## Run self test
 
-1.  You can use Readme\_XXX.md to support different languages, such as Readme\_en.md, Readme\_zh.md
-2.  Gitee blog [blog.gitee.com](https://blog.gitee.com)
-3.  Explore open source project [https://gitee.com/explore](https://gitee.com/explore)
-4.  The most valuable open source project [GVP](https://gitee.com/gvp)
-5.  The manual of Gitee [https://gitee.com/help](https://gitee.com/help)
-6.  The most popular members  [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+```bash
+build/rudp_self_test
+build/rudp_bench
+```
+
+On Windows, executable is `rudp_self_test.exe`.
+
+## API quick view
+
+1. `rudp::Endpoint::Init(config, hooks)` initializes endpoint.
+2. `rudp::Endpoint::StartConnect()` starts active handshake.
+3. `rudp::Endpoint::Send(data, len)` sends reliable messages when `IsConnected()==true`.
+4. `rudp::Endpoint::SendZeroCopy(data, len)` sends payload without payload-copy (needs `send_raw_vec`).
+5. Call `OnUdpPacket(data, len)` for each UDP datagram.
+6. Call `Tick()` periodically for retransmit, heartbeat and ACK flush.
+7. Manual switch: `SetAuthKey(new_id, k0, k1, false)` then `RotateTxKey(new_id)`.
+8. Automatic switch: `ScheduleTxKeyRotation(new_id, lead_packets)` with activation point control frame.
+9. Protocol sends `KEY_UPDATE_ACK`; sender retires old key after acknowledgement.

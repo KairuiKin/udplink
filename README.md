@@ -1,39 +1,64 @@
 # udplink
 
-#### 介绍
-{**以下是 Gitee 平台说明，您可以替换此简介**
-Gitee 是 OSCHINA 推出的基于 Git 的代码托管平台（同时支持 SVN）。专为开发者提供稳定、高效、安全的云端软件开发协作平台
-无论是个人、团队、或是企业，都能够用 Gitee 实现代码托管、项目管理、协作开发。企业项目请看 [https://gitee.com/enterprises](https://gitee.com/enterprises)}
+面向嵌入式/单片机场景的可靠 UDP 传输库（C++11）。
 
-#### 软件架构
-软件架构说明
+## 目标
 
+- 在不引入 TCP 复杂度的前提下，提供可靠、有序传输。
+- 单片机友好：固定内存占用、无动态分配、无线程依赖。
+- 可商用扩展：可插拔网络适配层、可配置窗口/重传策略、统计信息可观测。
 
-#### 安装教程
+## 设计要点
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+- 协议内核与网络 I/O 解耦：库只依赖三个回调（当前时间、底层发送、上层投递）。
+- 选择确认（SACK 位图）：ACK + 32bit bitmap，提升丢包/乱序链路效率。
+- 自适应 RTO：基于 RTT/方差估算超时，降低无效重传。
+- 固定容量队列：发送/接收均为静态数组，避免堆分配和碎片化。
+- 连接管理：`SYN/SYN-ACK` 建连、心跳保活、空闲超时检测。
+- 轻量发送整形：`pacing_bytes_per_tick` 约束突发流量，减小 MCU 峰值负载。
+- 会话防串线：每个连接携带 `session_id`，过滤过期/串线 UDP 包。
+- 防重放窗口：基于 `nonce` 的 64 位滑窗，拦截重放包。
+- 可选鉴权（SipHash-2-4）：`enable_auth + auth_key0/auth_key1`（或兼容 `auth_psk`），校验头部和载荷完整性。
+- 在线换钥：线协议携带 `key_id`，支持双密钥并行校验与无损切换。
+- 快速重传：重复 ACK 触发提前重传，降低尾延迟。
+- 零拷贝发送接口：`SendZeroCopy` + `send_raw_vec`，减少 payload 拷贝。
 
-#### 使用说明
+## 目录
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+- `include/rudp/rudp.hpp`：公开 API
+- `src/rudp.cpp`：协议核心实现
+- `tests/self_test.cpp`：丢包/乱序仿真自测
 
-#### 参与贡献
+## 编译
 
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
+```bash
+cmake -S . -B build
+cmake --build build --config Release
+```
 
+## 自测
 
-#### 特技
+```bash
+build/rudp_self_test
+build/rudp_bench
+```
 
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+Windows 下可执行文件名为 `rudp_self_test.exe`。
+
+## API 速览
+
+1. `rudp::Endpoint::Init(config, hooks)` 初始化端点。
+2. `rudp::Endpoint::StartConnect()` 主动发起连接。
+3. `rudp::Endpoint::Send(data, len)` 在 `IsConnected()==true` 后发送可靠消息。
+4. `rudp::Endpoint::SendZeroCopy(data, len)` 零拷贝发送（需实现 `send_raw_vec`）。
+5. 底层收到 UDP 包后调用 `OnUdpPacket(data, len)`。
+6. 周期调用 `Tick()` 触发重传、心跳与 ACK 刷新。
+7. 手动切换：`SetAuthKey(new_id, k0, k1, false)` 后 `RotateTxKey(new_id)`。
+8. 自动切换：`ScheduleTxKeyRotation(new_id, lead_packets)` 发送带生效点的控制帧。
+9. 协议会自动回 `KEY_UPDATE_ACK`，发送端收到确认后淘汰旧 key。
+
+## 当前版本限制
+
+- 以“消息”为单位，不做流式字节拼接。
+- 未实现加密/鉴权（商用建议在外层叠加 DTLS 或轻量认证头）。
+- 单连接协议内核；多连接可在业务层按会话维护多个 `Endpoint` 实例。
