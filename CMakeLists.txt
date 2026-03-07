@@ -6,6 +6,7 @@ include(CMakePackageConfigHelpers)
 
 option(RUDP_BUILD_TESTS "Build rudp self test" ON)
 option(RUDP_INSTALL "Enable install/export targets" ON)
+option(RUDP_BUILD_EXAMPLES "Build rudp examples" ON)
 
 add_library(rudp STATIC
     src/rudp.cpp
@@ -37,6 +38,13 @@ if(RUDP_BUILD_TESTS)
     target_link_libraries(rudp_bench PRIVATE rudp)
     add_executable(rudp_manager_test tests/manager_test.cpp)
     target_link_libraries(rudp_manager_test PRIVATE rudp)
+endif()
+
+if(RUDP_BUILD_EXAMPLES)
+    add_executable(rudp_example_endpoint examples/basic_endpoint.cpp)
+    target_link_libraries(rudp_example_endpoint PRIVATE rudp)
+    add_executable(rudp_example_manager examples/basic_manager.cpp)
+    target_link_libraries(rudp_example_manager PRIVATE rudp)
 endif()
 
 if(RUDP_INSTALL)

@@ -134,6 +134,43 @@ Config DefaultConfig() {
     return c;
 }
 
+Config ConfigForProfile(ConfigProfile profile) {
+    Config c = DefaultConfig();
+    switch (profile) {
+        case ConfigProfile::kBalanced:
+            break;
+        case ConfigProfile::kLowLatency:
+            c.send_window = 16;
+            c.recv_window = 16;
+            c.retransmit_min_ms = 6;
+            c.retransmit_max_ms = 120;
+            c.ack_delay_ms = 1;
+            c.heartbeat_ms = 60;
+            break;
+        case ConfigProfile::kLowPower:
+            c.send_window = 8;
+            c.recv_window = 8;
+            c.retransmit_min_ms = 30;
+            c.retransmit_max_ms = 1500;
+            c.ack_delay_ms = 12;
+            c.heartbeat_ms = 1200;
+            c.idle_timeout_ms = 12000;
+            break;
+        case ConfigProfile::kLossyLink:
+            c.send_window = 24;
+            c.recv_window = 24;
+            c.retransmit_min_ms = 8;
+            c.retransmit_max_ms = 600;
+            c.max_retransmits = 25;
+            c.key_update_max_retries = 32;
+            c.connect_retry_ms = 80;
+            break;
+        default:
+            break;
+    }
+    return c;
+}
+
 Endpoint::Endpoint()
     : initialized_(false),
       next_send_seq_(1),
@@ -1295,6 +1332,24 @@ uint16_t Endpoint::GetPendingSend() const {
         }
     }
     return n;
+}
+
+RuntimeMetrics Endpoint::GetRuntimeMetrics() const {
+    RuntimeMetrics m;
+    m.pending_send = 0;
+    for (uint16_t i = 0; i < kMaxQueue; ++i) {
+        if (send_slots_[i].used && !send_slots_[i].acked) {
+            ++m.pending_send;
+        }
+    }
+    m.rto_ms = rto_ms_;
+    m.smoothed_rtt_ms = smoothed_rtt_;
+    m.rtt_var_ms = rtt_var_;
+    const uint32_t tx_total = stats_.tx_packets + stats_.tx_retransmits;
+    m.tx_retransmit_ratio_permille = (tx_total == 0) ? 0 : ((stats_.tx_retransmits * 1000u) / tx_total);
+    const uint32_t rx_total = stats_.rx_packets;
+    m.rx_drop_ratio_permille = (rx_total == 0) ? 0 : ((stats_.rx_dropped * 1000u) / rx_total);
+    return m;
 }
 
 }  // namespace rudp

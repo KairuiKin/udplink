@@ -24,6 +24,13 @@
 - 快速重传：重复 ACK 触发提前重传，降低尾延迟。
 - 零拷贝发送接口：`SendZeroCopy` + `send_raw_vec`，减少 payload 拷贝。
 
+## 参数档位
+
+- `ConfigForProfile(kBalanced)`：默认平衡。
+- `ConfigForProfile(kLowLatency)`：更低 ACK 延迟和重传基线。
+- `ConfigForProfile(kLowPower)`：更低唤醒频率和更大超时窗口。
+- `ConfigForProfile(kLossyLink)`：更高容错和重试上限。
+
 ## 目录
 
 - `include/rudp/rudp.hpp`：公开 API
@@ -59,6 +66,18 @@ build/rudp_bench
 build/rudp_manager_test
 ```
 
+## 快速示例
+
+```bash
+build/rudp_example_endpoint
+build/rudp_example_manager
+```
+
+示例代码：
+
+- `examples/basic_endpoint.cpp`
+- `examples/basic_manager.cpp`
+
 Windows 下可执行文件名为 `rudp_self_test.exe`。
 
 ## API 速览
@@ -73,6 +92,7 @@ Windows 下可执行文件名为 `rudp_self_test.exe`。
 8. 自动切换：`ScheduleTxKeyRotation(new_id, lead_packets)` 发送带生效点的控制帧。
 9. 协议会自动回 `KEY_UPDATE_ACK`，发送端收到确认后淘汰旧 key。
 10. 若 `KEY_UPDATE_ACK` 超时，发送端会延期激活点并重发；超过重试上限则取消本次换钥。
+11. 指标导出：`Endpoint::GetRuntimeMetrics()` 获取队列、RTO、RTT、重传率、丢包率。
 
 ## 当前版本限制
 

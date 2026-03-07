@@ -22,6 +22,13 @@ enum class ConnectionState : uint8_t {
     kTimedOut = 3
 };
 
+enum class ConfigProfile : uint8_t {
+    kBalanced = 0,
+    kLowLatency = 1,
+    kLowPower = 2,
+    kLossyLink = 3
+};
+
 struct Stats {
     uint32_t tx_packets;
     uint32_t tx_retransmits;
@@ -36,6 +43,15 @@ struct Stats {
     uint32_t connect_attempts;
     uint32_t connect_success;
     uint32_t connect_timeouts;
+};
+
+struct RuntimeMetrics {
+    uint16_t pending_send;
+    uint32_t rto_ms;
+    uint32_t smoothed_rtt_ms;
+    uint32_t rtt_var_ms;
+    uint32_t tx_retransmit_ratio_permille;
+    uint32_t rx_drop_ratio_permille;
 };
 
 struct Config {
@@ -99,6 +115,7 @@ public:
     void Tick();
 
     const Stats& GetStats() const { return stats_; }
+    RuntimeMetrics GetRuntimeMetrics() const;
     ConnectionState GetConnectionState() const { return conn_state_; }
     bool IsConnected() const { return conn_state_ == ConnectionState::kConnected; }
     uint16_t GetPendingSend() const;
@@ -238,6 +255,7 @@ private:
 };
 
 Config DefaultConfig();
+Config ConfigForProfile(ConfigProfile profile);
 
 }  // namespace rudp
 

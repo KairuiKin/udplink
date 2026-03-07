@@ -27,6 +27,13 @@ Reliable UDP library for embedded and MCU-class targets (C++11).
 - Fast retransmit on duplicate ACK patterns to reduce recovery latency.
 - Zero-copy send path via `SendZeroCopy` + `send_raw_vec`.
 
+## Tuning profiles
+
+- `ConfigForProfile(kBalanced)`: default balanced profile.
+- `ConfigForProfile(kLowLatency)`: lower ack delay and retransmit baseline.
+- `ConfigForProfile(kLowPower)`: lower wake frequency and wider timeout windows.
+- `ConfigForProfile(kLossyLink)`: stronger retry tolerance for unstable links.
+
 ## Layout
 
 - `include/rudp/rudp.hpp`: public API
@@ -62,6 +69,18 @@ build/rudp_bench
 build/rudp_manager_test
 ```
 
+## Quick examples
+
+```bash
+build/rudp_example_endpoint
+build/rudp_example_manager
+```
+
+Example sources:
+
+- `examples/basic_endpoint.cpp`
+- `examples/basic_manager.cpp`
+
 On Windows, executable is `rudp_self_test.exe`.
 
 ## API quick view
@@ -76,3 +95,4 @@ On Windows, executable is `rudp_self_test.exe`.
 8. Automatic switch: `ScheduleTxKeyRotation(new_id, lead_packets)` with activation point control frame.
 9. Protocol sends `KEY_UPDATE_ACK`; sender retires old key after acknowledgement.
 10. On `KEY_UPDATE_ACK` timeout, sender postpones activation and retries; rotation is canceled after max retries.
+11. Metrics export: `Endpoint::GetRuntimeMetrics()` for queue/RTO/RTT/retransmit/drop ratios.
