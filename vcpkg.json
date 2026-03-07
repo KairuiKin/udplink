@@ -1,0 +1,6 @@
+{
+  "name": "rudp",
+  "version-string": "0.1.0",
+  "description": "MCU-friendly reliable UDP library in C++11",
+  "license": "Apache-2.0"
+}
