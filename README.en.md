@@ -80,6 +80,8 @@ Example sources:
 
 - `examples/basic_endpoint.cpp`
 - `examples/basic_manager.cpp`
+- `examples/socket_posix.cpp` (POSIX UDP socket)
+- `examples/socket_winsock.cpp` (WinSock UDP socket)
 
 On Windows, executable is `rudp_self_test.exe`.
 

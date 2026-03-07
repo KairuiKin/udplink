@@ -77,6 +77,8 @@ build/rudp_example_manager
 
 - `examples/basic_endpoint.cpp`
 - `examples/basic_manager.cpp`
+- `examples/socket_posix.cpp`（POSIX UDP 套接字）
+- `examples/socket_winsock.cpp`（WinSock UDP 套接字）
 
 Windows 下可执行文件名为 `rudp_self_test.exe`。
 
