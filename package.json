@@ -1,0 +1,22 @@
+{
+  "name": "udplink",
+  "version": "1.0.0",
+  "description": "面向嵌入式/单片机场景的可靠 UDP 传输库（C++11）。",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "example": "examples",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitee.com/wanghaonan199105240070/udplink.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

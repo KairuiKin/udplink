@@ -79,6 +79,10 @@ build/rudp_example_manager
 - `examples/basic_manager.cpp`
 - `examples/socket_posix.cpp`（POSIX UDP 套接字）
 - `examples/socket_winsock.cpp`（WinSock UDP 套接字）
+- `examples/stm32/stm32_f4_udp.cpp`（STM32 F4 示例）
+- `examples/esp32/esp32_udp.cpp`（ESP32 示例）
+- `examples/raspberry_pi/raspberry_pi_udp.cpp`（Raspberry Pi 示例）
+- `examples/arduino/arduino_udp/arduino_udp.ino`（Arduino 示例）
 
 Windows 下可执行文件名为 `rudp_self_test.exe`。
 
