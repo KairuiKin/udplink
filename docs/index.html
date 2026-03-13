@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>udplink - 嵌入式可靠UDP库</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+        .hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 80px 20px; text-align: center; }
+        .hero h1 { font-size: 3rem; margin-bottom: 20px; }
+        .hero p { font-size: 1.3rem; opacity: 0.9; max-width: 600px; margin: 0 auto 30px; }
+        .btn { display: inline-block; padding: 15px 40px; background: white; color: #667eea; text-decoration: none; border-radius: 30px; font-weight: bold; margin: 5px; transition: transform 0.2s; }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-outline { background: transparent; border: 2px solid white; color: white; }
+        .features { padding: 80px 20px; max-width: 1200px; margin: 0 auto; }
+        .features h2 { text-align: center; margin-bottom: 50px; font-size: 2rem; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        .card { padding: 30px; border-radius: 10px; background: #f8f9fa; }
+        .card h3 { color: #667eea; margin-bottom: 15px; }
+        .code { background: #282c34; color: #abb2bf; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 0.9rem; }
+        .footer { background: #282c34; color: #888; padding: 40px 20px; text-align: center; }
+        .footer a { color: #667eea; }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>udplink</h1>
+        <p>面向嵌入式/单片机场景的可靠 UDP 传输库（C++11）</p>
+        <a href="https://github.com/KairuiKin/udplink" class="btn">GitHub</a>
+        <a href="https://gitee.com/wanghaonan199105240070/udplink" class="btn btn-outline">Gitee</a>
+    </div>
+    
+    <div class="features">
+        <h2>为什么选择 udplink？</h2>
+        <div class="grid">
+            <div class="card">
+                <h3>🚀 固定内存</h3>
+                <p>编译时确定，无动态分配，无堆内存需求，MCU 友好</p>
+            </div>
+            <div class="card">
+                <h3>⚡ 零依赖</h3>
+                <p>纯 C++11 实现，无外部库依赖，易于移植</p>
+            </div>
+            <div class="card">
+                <h3>🔒 安全可靠</h3>
+                <p>SipHash 鉴权、双密钥在线换钥、防重放攻击</p>
+            </div>
+            <div class="card">
+                <h3>📦 商用扩展</h3>
+                <p>可插拔网络适配层、可配置窗口/重传策略</p>
+            </div>
+        </div>
+        
+        <h2 style="margin-top: 60px;">快速开始</h2>
+        <div class="code">
+<pre># 克隆项目
+git clone https://github.com/KairuiKin/udplink.git
+cd udplink
+
+# 编译
+cmake -S . -B build
+cmake --build build --config Release
+
+# 测试
+./build/rudp_self_test</pre>
+        </div>
+        
+        <h2 style="margin-top: 60px;">代码示例</h2>
+        <div class="code">
+<pre>#include "rudp/rudp.hpp"
+
+rudp::Config config = rudp::ConfigForProfile(rudp::kProfileLowPower);
+config.enable_auth = true;
+config.auth_key0 = 0x0123456789ABCDEF;
+config.auth_key1 = 0xFEDCBA9876543210;
+
+rudp::Hooks hooks;
+hooks.send = [](const uint8_t* d, uint32_t len, void*) { 
+    return udp_send(d, len); 
+};
+hooks.get_tick_ms = []() { return now_ms(); };
+
+rudp::Endpoint endpoint;
+endpoint.Init(config, hooks);
+endpoint.StartConnect("192.168.1.100", 8888);</pre>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>📚 <a href="examples.html">示例</a> | <a href="api.html">API</a> | <a href="https://github.com/KairuiKin/udplink/issues">Issues</a></p>
+        <p style="margin-top: 20px;">Apache 2.0 License | &copy; 2024 udplink</p>
+    </div>
+</body>
+</html>
