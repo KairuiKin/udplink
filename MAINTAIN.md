@@ -31,15 +31,16 @@
 - 提交2个文档到Gitee
 - ✅ 添加 STM32 示例 (examples/stm32/stm32_f4_udp.cpp)
 - ✅ 添加 ESP32 示例 (examples/esp32/esp32_udp.cpp)
-- ✅ 推送到 Gitee
 - ✅ 添加 Raspberry Pi 示例 (examples/raspberry_pi/)
 - ✅ 添加 Arduino 示例 (examples/arduino/arduino_udp/)
+- ✅ 同步代码到 GitHub (1ec070e)
 
 ### 待办
 - [x] 完善 CI
 - [x] 添加 STM32 示例
 - [x] 添加 ESP32 示例
-- [x] 写技术博客
-- [ ] 同步到 GitHub
+- [x] 添加 Raspberry Pi 示例
+- [x] 添加 Arduino 示例
+- [x] 同步到 GitHub
 - [ ] 搭建文档网站
 - [ ] 写技术博客推广
