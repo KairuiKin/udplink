@@ -23,7 +23,20 @@
 
 ## 开发日志
 
+## 开发日志
+
 ### 2026-03-14
 - 克隆项目到本地 D:\gitee\udplink
 - 安装 cmake
 - 分析项目结构
+- 制定增长计划 (GROWTH.md)
+- 提交2个文档到Gitee
+- ✅ 添加 STM32 示例 (examples/stm32/stm32_f4_udp.cpp)
+- ✅ 添加 ESP32 示例 (examples/esp32/esp32_udp.cpp)
+- ✅ 推送到 Gitee
+
+### 待办
+- [ ] 完善 CI
+- [ ] 搭建文档网站
+- [ ] 写技术博客
+- [ ] 同步到 GitHub
