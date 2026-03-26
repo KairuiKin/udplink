@@ -38,7 +38,8 @@ int main() {
     cfg.auth_key1 = 0x0F0E0D0C0B0A0908ull;
     rudp::ManagerHooks ha = {&a, NowMs, SendRaw, SendRawVec, OnDeliver, 0, 0};
     rudp::ManagerHooks hb = {&b, NowMs, SendRaw, SendRawVec, OnDeliver, 0, 0};
-    rudp::ConnectionManager ma, mb;
+    static rudp::ConnectionManager ma;
+    static rudp::ConnectionManager mb;
     if (!ma.Init(cfg, ha) || !mb.Init(cfg, hb)) return 1;
     ma.Open(1001, true);
     ma.Open(2002, true);

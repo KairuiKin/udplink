@@ -1,6 +1,6 @@
 {
   "name": "udplink",
-  "version": "1.0.0",
+  "version": "0.1.1",
   "description": "面向嵌入式/单片机场景的可靠 UDP 传输库（C++11）。",
   "main": "index.js",
   "directories": {
@@ -17,6 +17,6 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "type": "commonjs"
 }

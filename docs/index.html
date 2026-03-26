@@ -68,27 +68,24 @@ cmake --build build --config Release
         
         <h2 style="margin-top: 60px;">代码示例</h2>
         <div class="code">
-<pre>#include "rudp/rudp.hpp"
+<!-- BEGIN: BASIC_ENDPOINT_SNIPPET -->
+<pre>rudp::Config cfg = rudp::ConfigForProfile(rudp::ConfigProfile::kBalanced);
+cfg.enable_auth = true;
+cfg.auth_key0 = 0x0706050403020100ull;
+cfg.auth_key1 = 0x0F0E0D0C0B0A0908ull;
 
-rudp::Config config = rudp::ConfigForProfile(rudp::kProfileLowPower);
-config.enable_auth = true;
-config.auth_key0 = 0x0123456789ABCDEF;
-config.auth_key1 = 0xFEDCBA9876543210;
-
-rudp::Hooks hooks;
-hooks.send = [](const uint8_t* d, uint32_t len, void*) { 
-    return udp_send(d, len); 
-};
-hooks.get_tick_ms = []() { return now_ms(); };
-
-rudp::Endpoint endpoint;
-endpoint.Init(config, hooks);
-endpoint.StartConnect("192.168.1.100", 8888);</pre>
+rudp::Endpoint a;
+rudp::Endpoint b;
+rudp::Hooks ha = {&amp;wire, NowMs, SendA, 0, DeliverA, 0, 0};
+rudp::Hooks hb = {&amp;wire, NowMs, SendB, 0, DeliverB, 0, 0};
+if (!a.Init(cfg, ha) || !b.Init(cfg, hb)) return 1;
+a.StartConnect();</pre>
+<!-- END: BASIC_ENDPOINT_SNIPPET -->
         </div>
     </div>
     
     <div class="footer">
-        <p>📚 <a href="examples.html">示例</a> | <a href="api.html">API</a> | <a href="https://github.com/KairuiKin/udplink/issues">Issues</a></p>
+        <p>📚 <a href="blog/mcu-udp-vs-tcp.md">博客</a> | <a href="https://github.com/KairuiKin/udplink">仓库</a> | <a href="https://github.com/KairuiKin/udplink/issues">Issues</a></p>
         <p style="margin-top: 20px;">Apache 2.0 License | &copy; 2024 udplink</p>
     </div>
 </body>

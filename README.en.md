@@ -98,3 +98,12 @@ On Windows, executable is `rudp_self_test.exe`.
 9. Protocol sends `KEY_UPDATE_ACK`; sender retires old key after acknowledgement.
 10. On `KEY_UPDATE_ACK` timeout, sender postpones activation and retries; rotation is canceled after max retries.
 11. Metrics export: `Endpoint::GetRuntimeMetrics()` for queue/RTO/RTT/retransmit/drop ratios.
+
+## Manager API quick view
+
+1. `rudp::ConnectionManager::Init(config, hooks)` initializes multi-connection routing.
+2. `Open(key, start_connect)` creates/finds a keyed endpoint; `Remove(key)` closes it.
+3. `OnUdpPacket(key, data, len)` routes inbound datagrams by session key.
+4. `Send/SendZeroCopy/Tick` work at manager level per key.
+5. Prefer `IsConnected/GetConnectionState/GetStats/GetRuntimeMetrics` for concurrent-safe reads.
+6. `Find()` is a legacy helper; returned `Endpoint*` is not stable across concurrent `Remove/Open`.

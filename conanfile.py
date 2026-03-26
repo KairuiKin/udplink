@@ -4,7 +4,7 @@ from conan.tools.cmake import CMake, cmake_layout
 
 class RudpConan(ConanFile):
     name = "rudp"
-    version = "0.1.0"
+    version = "0.1.1"
     license = "Apache-2.0"
     url = "https://gitee.com/wanghaonan199105240070/udplink"
     description = "MCU-friendly reliable UDP library in C++11"

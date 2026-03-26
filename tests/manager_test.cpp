@@ -27,6 +27,8 @@ struct Node {
     uint32_t now_ms;
     std::vector<Packet> out;
     std::vector<Delivered> delivered;
+    bool in_critical;
+    bool reentered_critical;
 };
 
 static uint32_t NowMs(void* u) {
@@ -63,11 +65,28 @@ static void OnDeliver(void* u, uint64_t key, const uint8_t* data, uint16_t len) 
     n->delivered.push_back(d);
 }
 
+static void EnterCritical(void* u) {
+    Node* n = static_cast<Node*>(u);
+    if (n->in_critical) {
+        n->reentered_critical = true;
+    }
+    n->in_critical = true;
+}
+
+static void LeaveCritical(void* u) {
+    Node* n = static_cast<Node*>(u);
+    n->in_critical = false;
+}
+
 int main() {
     Node a_node;
     Node b_node;
     a_node.now_ms = 1;
     b_node.now_ms = 1;
+    a_node.in_critical = false;
+    b_node.in_critical = false;
+    a_node.reentered_critical = false;
+    b_node.reentered_critical = false;
 
     rudp::Config cfg = rudp::DefaultConfig();
     cfg.mtu = 160;
@@ -78,11 +97,11 @@ int main() {
     cfg.auth_key0 = 0x0706050403020100ull;
     cfg.auth_key1 = 0x0F0E0D0C0B0A0908ull;
 
-    rudp::ManagerHooks ha = {&a_node, NowMs, SendRaw, SendRawVec, OnDeliver, 0, 0};
-    rudp::ManagerHooks hb = {&b_node, NowMs, SendRaw, SendRawVec, OnDeliver, 0, 0};
+    rudp::ManagerHooks ha = {&a_node, NowMs, SendRaw, SendRawVec, OnDeliver, EnterCritical, LeaveCritical};
+    rudp::ManagerHooks hb = {&b_node, NowMs, SendRaw, SendRawVec, OnDeliver, EnterCritical, LeaveCritical};
 
-    rudp::ConnectionManager a_mgr;
-    rudp::ConnectionManager b_mgr;
+    static rudp::ConnectionManager a_mgr;
+    static rudp::ConnectionManager b_mgr;
     CHECK_OR_RET(a_mgr.Init(cfg, ha), 10);
     CHECK_OR_RET(b_mgr.Init(cfg, hb), 11);
 
@@ -108,16 +127,14 @@ int main() {
             a_mgr.OnUdpPacket(p.key, &p.data[0], static_cast<uint16_t>(p.data.size()));
         }
 
-        rudp::Endpoint* e1 = a_mgr.Find(1);
-        rudp::Endpoint* e2 = a_mgr.Find(2);
-        if (e1 && e2 && e1->IsConnected() && e2->IsConnected()) {
+        if (a_mgr.IsConnected(1) && a_mgr.IsConnected(2)) {
             break;
         }
     }
-    CHECK_OR_RET(a_mgr.Find(1) && a_mgr.Find(1)->IsConnected(), 20);
-    CHECK_OR_RET(a_mgr.Find(2) && a_mgr.Find(2)->IsConnected(), 21);
-    CHECK_OR_RET(b_mgr.Find(1) && b_mgr.Find(1)->IsConnected(), 22);
-    CHECK_OR_RET(b_mgr.Find(2) && b_mgr.Find(2)->IsConnected(), 23);
+    CHECK_OR_RET(a_mgr.IsConnected(1), 20);
+    CHECK_OR_RET(a_mgr.IsConnected(2), 21);
+    CHECK_OR_RET(b_mgr.IsConnected(1), 22);
+    CHECK_OR_RET(b_mgr.IsConnected(2), 23);
 
     const char* m1 = "multi-conn-1";
     const char* m2 = "multi-conn-2";
@@ -158,6 +175,7 @@ int main() {
     }
     CHECK_OR_RET(got1 && got2, 40);
     CHECK_OR_RET(a_mgr.GetActiveCount() >= 2, 41);
+    CHECK_OR_RET(!a_node.reentered_critical && !b_node.reentered_critical, 42);
 
     puts("rudp manager test passed");
     return 0;

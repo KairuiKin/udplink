@@ -33,13 +33,19 @@ public:
     ConnectionManager();
 
     bool Init(const Config& endpoint_cfg, const ManagerHooks& hooks);
+    // Legacy helper. In concurrent use, prefer manager-level query APIs below.
     Endpoint* Open(uint64_t key, bool start_connect);
+    // Legacy helper. The returned pointer is not stable across concurrent Remove/Open.
     Endpoint* Find(uint64_t key);
     void Remove(uint64_t key);
     void OnUdpPacket(uint64_t key, const uint8_t* data, uint16_t len);
     void Tick();
     SendStatus Send(uint64_t key, const uint8_t* payload, uint16_t len);
     SendStatus SendZeroCopy(uint64_t key, const uint8_t* payload, uint16_t len);
+    bool IsConnected(uint64_t key) const;
+    ConnectionState GetConnectionState(uint64_t key) const;
+    bool GetStats(uint64_t key, Stats* out) const;
+    bool GetRuntimeMetrics(uint64_t key, RuntimeMetrics* out) const;
     uint16_t GetActiveCount() const;
 
 private:
@@ -65,9 +71,10 @@ private:
     Slot* FindSlot(uint64_t key);
     const Slot* FindSlot(uint64_t key) const;
     Slot* AllocateSlot(uint64_t key);
+    Slot* EnsureSlot(uint64_t key);
     void FreeSlot(Slot* slot);
-    void Lock();
-    void Unlock();
+    void Lock() const;
+    void Unlock() const;
 
     bool initialized_;
     Config endpoint_cfg_;

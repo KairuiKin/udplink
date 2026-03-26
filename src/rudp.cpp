@@ -1117,7 +1117,6 @@ void Endpoint::OnUdpPacket(const uint8_t* data, uint16_t len) {
         return;
     }
 
-    HandleAck(ack, ack_bits);
     bool replay_dup = false;
     if (!ValidateAndTrackReplay(nonce, &replay_dup)) {
         if (replay_dup) {
@@ -1131,6 +1130,7 @@ void Endpoint::OnUdpPacket(const uint8_t* data, uint16_t len) {
         Unlock();
         return;
     }
+    HandleAck(ack, ack_bits);
     if (flags != 0) {
         ++stats_.rx_control;
         HandleControl(flags, session_id, last_rx_ms_, payload, payload_len);

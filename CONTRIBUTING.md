@@ -17,6 +17,13 @@ cmake --build build --config Release
 ```bash
 build/rudp_self_test
 build/rudp_bench
+build/rudp_manager_test
+```
+
+## Docs Sync
+
+```bash
+python scripts/sync_docs_snippets.py
 ```
 
 ## Coding Rules
@@ -30,5 +37,7 @@ build/rudp_bench
 
 1. Build succeeds on your target platform.
 2. `rudp_self_test` passes.
-3. Benchmark still runs (`rudp_bench`).
-4. Public API changes are reflected in README.
+3. `rudp_manager_test` passes.
+4. Benchmark still runs (`rudp_bench`).
+5. Docs snippets are synced (`python scripts/sync_docs_snippets.py`).
+6. Public API changes are reflected in README.

@@ -31,6 +31,7 @@ int main() {
     Wire wire;
     wire.now_ms = 1;
 
+    // DOCS_SNIPPET_BEGIN:basic_endpoint
     rudp::Config cfg = rudp::ConfigForProfile(rudp::ConfigProfile::kBalanced);
     cfg.enable_auth = true;
     cfg.auth_key0 = 0x0706050403020100ull;
@@ -42,6 +43,7 @@ int main() {
     rudp::Hooks hb = {&wire, NowMs, SendB, 0, DeliverB, 0, 0};
     if (!a.Init(cfg, ha) || !b.Init(cfg, hb)) return 1;
     a.StartConnect();
+    // DOCS_SNIPPET_END:basic_endpoint
 
     for (int i = 0; i < 2000; ++i) {
         ++wire.now_ms;
