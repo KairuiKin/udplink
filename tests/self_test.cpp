@@ -9,6 +9,8 @@ struct Wire {
     uint32_t now_ms;
     bool block_a2b;
     bool block_b2a;
+    uint32_t a2b_tx_count;
+    uint32_t b2a_tx_count;
     std::vector<std::vector<uint8_t> > a2b;
     std::vector<std::vector<uint8_t> > b2a;
     std::vector<std::vector<uint8_t> > recv_a;
@@ -25,10 +27,11 @@ static bool SendA(void* u, const uint8_t* d, uint16_t n) {
         return true;
     }
     std::vector<uint8_t> pkt(d, d + n);
-    if ((w->a2b.size() % 7) == 3) {
+    ++w->a2b_tx_count;
+    if ((w->a2b_tx_count % 11u) == 0u) {
         return true;
     }
-    if ((w->a2b.size() % 5) == 2) {
+    if ((w->a2b_tx_count % 5u) == 0u) {
         w->a2b.insert(w->a2b.begin(), pkt);
     } else {
         w->a2b.push_back(pkt);
@@ -50,7 +53,8 @@ static bool SendB(void* u, const uint8_t* d, uint16_t n) {
         return true;
     }
     std::vector<uint8_t> pkt(d, d + n);
-    if ((w->b2a.size() % 9) == 4) {
+    ++w->b2a_tx_count;
+    if ((w->b2a_tx_count % 13u) == 0u) {
         return true;
     }
     w->b2a.push_back(pkt);
@@ -80,6 +84,8 @@ int main() {
     wire.now_ms = 1;
     wire.block_a2b = false;
     wire.block_b2a = false;
+    wire.a2b_tx_count = 0;
+    wire.b2a_tx_count = 0;
 
     rudp::Endpoint a;
     rudp::Endpoint b;
