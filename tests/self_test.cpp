@@ -31,7 +31,7 @@ static bool SendA(void* u, const uint8_t* d, uint16_t n) {
     if (w->a2b_tx_count == 11u || w->a2b_tx_count == 23u || w->a2b_tx_count == 37u || w->a2b_tx_count == 59u) {
         return true;
     }
-    if ((w->a2b_tx_count % 5u) == 0u) {
+    if (w->a2b_tx_count <= 80u && (w->a2b_tx_count % 5u) == 0u) {
         w->a2b.insert(w->a2b.begin(), pkt);
     } else {
         w->a2b.push_back(pkt);
