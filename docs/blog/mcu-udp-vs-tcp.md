@@ -46,35 +46,21 @@ udplink 是一个专为嵌入式设计的可靠 UDP 库：
 
 ### ESP32 使用
 
+<!-- BEGIN: BASIC_ENDPOINT_SNIPPET -->
 ```cpp
-#include "rudp/rudp.hpp"
+rudp::Config cfg = rudp::ConfigForProfile(rudp::ConfigProfile::kBalanced);
+cfg.enable_auth = true;
+cfg.auth_key0 = 0x0706050403020100ull;
+cfg.auth_key1 = 0x0F0E0D0C0B0A0908ull;
 
-// 配置
-rudp::Config config = rudp::ConfigForProfile(rudp::kProfileLowPower);
-config.enable_auth = true;
-config.auth_key0 = 0x0123456789ABCDEF;
-config.auth_key1 = 0xFEDCBA9876543210;
-
-// 回调
-rudp::Hooks hooks;
-hooks.send = [](const uint8_t* data, uint32_t len, void*) -> int {
-    return sendto(sock, data, len, 0, &dest_addr, sizeof(dest_addr));
-};
-hooks.get_tick_ms = []() { return esp_timer_get_time() / 1000; };
-
-// 初始化
-rudp::Endpoint endpoint;
-endpoint.Init(config, hooks);
-
-// 连接
-endpoint.StartConnect("192.168.1.100", 8888);
-
-// 主循环
-while (true) {
-    endpoint.Tick();
-    vTaskDelay(pdMS_TO_TICKS(10));
-}
+rudp::Endpoint a;
+rudp::Endpoint b;
+rudp::Hooks ha = {&wire, NowMs, SendA, 0, DeliverA, 0, 0};
+rudp::Hooks hb = {&wire, NowMs, SendB, 0, DeliverB, 0, 0};
+if (!a.Init(cfg, ha) || !b.Init(cfg, hb)) return 1;
+a.StartConnect();
 ```
+<!-- END: BASIC_ENDPOINT_SNIPPET -->
 
 ## 性能对比
 

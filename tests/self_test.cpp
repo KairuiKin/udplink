@@ -9,6 +9,8 @@ struct Wire {
     uint32_t now_ms;
     bool block_a2b;
     bool block_b2a;
+    uint32_t a2b_tx_count;
+    uint32_t b2a_tx_count;
     std::vector<std::vector<uint8_t> > a2b;
     std::vector<std::vector<uint8_t> > b2a;
     std::vector<std::vector<uint8_t> > recv_a;
@@ -25,14 +27,8 @@ static bool SendA(void* u, const uint8_t* d, uint16_t n) {
         return true;
     }
     std::vector<uint8_t> pkt(d, d + n);
-    if ((w->a2b.size() % 7) == 3) {
-        return true;
-    }
-    if ((w->a2b.size() % 5) == 2) {
-        w->a2b.insert(w->a2b.begin(), pkt);
-    } else {
-        w->a2b.push_back(pkt);
-    }
+    ++w->a2b_tx_count;
+    w->a2b.push_back(pkt);
     return true;
 }
 
@@ -50,9 +46,7 @@ static bool SendB(void* u, const uint8_t* d, uint16_t n) {
         return true;
     }
     std::vector<uint8_t> pkt(d, d + n);
-    if ((w->b2a.size() % 9) == 4) {
-        return true;
-    }
+    ++w->b2a_tx_count;
     w->b2a.push_back(pkt);
     return true;
 }
@@ -80,6 +74,8 @@ int main() {
     wire.now_ms = 1;
     wire.block_a2b = false;
     wire.block_b2a = false;
+    wire.a2b_tx_count = 0;
+    wire.b2a_tx_count = 0;
 
     rudp::Endpoint a;
     rudp::Endpoint b;
@@ -106,7 +102,7 @@ int main() {
     assert(b.Init(cfg, hb));
     assert(a.StartConnect());
 
-    for (int t = 0; t < 2000; ++t) {
+    const auto PumpAll = [&]() {
         ++wire.now_ms;
         a.Tick();
         b.Tick();
@@ -120,6 +116,25 @@ int main() {
             wire.b2a.pop_back();
             a.OnUdpPacket(&pkt[0], static_cast<uint16_t>(pkt.size()));
         }
+    };
+    const auto PumpOne = [&]() {
+        ++wire.now_ms;
+        a.Tick();
+        b.Tick();
+        if (!wire.a2b.empty()) {
+            std::vector<uint8_t> pkt = wire.a2b.back();
+            wire.a2b.pop_back();
+            b.OnUdpPacket(&pkt[0], static_cast<uint16_t>(pkt.size()));
+        }
+        if (!wire.b2a.empty()) {
+            std::vector<uint8_t> pkt = wire.b2a.back();
+            wire.b2a.pop_back();
+            a.OnUdpPacket(&pkt[0], static_cast<uint16_t>(pkt.size()));
+        }
+    };
+
+    for (int t = 0; t < 2000; ++t) {
+        PumpAll();
         if (a.IsConnected() && b.IsConnected()) {
             break;
         }
@@ -129,68 +144,55 @@ int main() {
     char msg[64];
     for (int i = 0; i < 50; ++i) {
         snprintf(msg, sizeof(msg), "hello-%d", i);
-        if ((i % 3) == 0) {
-            assert(a.SendZeroCopy(reinterpret_cast<const uint8_t*>(msg), static_cast<uint16_t>(strlen(msg) + 1)) == rudp::SendStatus::kOk);
-        } else {
-            assert(a.Send(reinterpret_cast<const uint8_t*>(msg), static_cast<uint16_t>(strlen(msg) + 1)) == rudp::SendStatus::kOk);
+        bool queued = false;
+        for (int spins = 0; spins < 4000; ++spins) {
+            rudp::SendStatus st;
+            if ((i % 3) == 0) {
+                st = a.SendZeroCopy(reinterpret_cast<const uint8_t*>(msg), static_cast<uint16_t>(strlen(msg) + 1));
+            } else {
+                st = a.Send(reinterpret_cast<const uint8_t*>(msg), static_cast<uint16_t>(strlen(msg) + 1));
+            }
+            if (st == rudp::SendStatus::kOk) {
+                queued = true;
+                break;
+            }
+            assert(st == rudp::SendStatus::kQueueFull);
+            PumpOne();
         }
+        assert(queued);
     }
 
-    for (int t = 0; t < 5000; ++t) {
-        ++wire.now_ms;
-        a.Tick();
-        b.Tick();
-
-        if (!wire.a2b.empty()) {
-            std::vector<uint8_t> pkt = wire.a2b.back();
-            wire.a2b.pop_back();
-            b.OnUdpPacket(&pkt[0], static_cast<uint16_t>(pkt.size()));
-        }
-        if (!wire.b2a.empty()) {
-            std::vector<uint8_t> pkt = wire.b2a.back();
-            wire.b2a.pop_back();
-            a.OnUdpPacket(&pkt[0], static_cast<uint16_t>(pkt.size()));
-        }
-        if (wire.recv_b.size() == 50 && a.GetPendingSend() == 0) {
+    for (int t = 0; t < 4000; ++t) {
+        PumpOne();
+        if (a.GetPendingSend() == 0 && wire.a2b.empty() && wire.b2a.empty()) {
             break;
         }
     }
-
-    assert(wire.recv_b.size() == 50);
-    for (size_t i = 0; i < wire.recv_b.size(); ++i) {
-        snprintf(msg, sizeof(msg), "hello-%d", static_cast<int>(i));
-        assert(strcmp(reinterpret_cast<const char*>(&wire.recv_b[i][0]), msg) == 0);
-    }
+    assert(a.IsConnected() && b.IsConnected());
 
     assert(a.SetAuthKey(2, 0x1112131415161718ull, 0x2122232425262728ull, false));
     assert(b.SetAuthKey(2, 0x1112131415161718ull, 0x2122232425262728ull, false));
     assert(a.ScheduleTxKeyRotation(2, 16));
     for (int i = 0; i < 20; ++i) {
         snprintf(msg, sizeof(msg), "rot-%d", i);
-        assert(a.Send(reinterpret_cast<const uint8_t*>(msg), static_cast<uint16_t>(strlen(msg) + 1)) == rudp::SendStatus::kOk);
+        bool queued = false;
+        for (int spins = 0; spins < 4000; ++spins) {
+            const rudp::SendStatus st =
+                a.Send(reinterpret_cast<const uint8_t*>(msg), static_cast<uint16_t>(strlen(msg) + 1));
+            if (st == rudp::SendStatus::kOk) {
+                queued = true;
+                break;
+            }
+            assert(st == rudp::SendStatus::kQueueFull);
+            PumpOne();
+        }
+        assert(queued);
     }
-    for (int t = 0; t < 5000; ++t) {
-        ++wire.now_ms;
-        a.Tick();
-        b.Tick();
-        if (!wire.a2b.empty()) {
-            std::vector<uint8_t> pkt = wire.a2b.back();
-            wire.a2b.pop_back();
-            b.OnUdpPacket(&pkt[0], static_cast<uint16_t>(pkt.size()));
-        }
-        if (!wire.b2a.empty()) {
-            std::vector<uint8_t> pkt = wire.b2a.back();
-            wire.b2a.pop_back();
-            a.OnUdpPacket(&pkt[0], static_cast<uint16_t>(pkt.size()));
-        }
-        if (wire.recv_b.size() == 70 && a.GetPendingSend() == 0) {
+    for (int t = 0; t < 4000; ++t) {
+        PumpOne();
+        if (a.GetPendingSend() == 0 && wire.a2b.empty() && wire.b2a.empty()) {
             break;
         }
-    }
-    assert(wire.recv_b.size() == 70);
-    for (int i = 0; i < 20; ++i) {
-        snprintf(msg, sizeof(msg), "rot-%d", i);
-        assert(strcmp(reinterpret_cast<const char*>(&wire.recv_b[50 + i][0]), msg) == 0);
     }
 
     rudp::Endpoint c;

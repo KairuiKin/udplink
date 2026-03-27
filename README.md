@@ -100,6 +100,15 @@ Windows 下可执行文件名为 `rudp_self_test.exe`。
 10. 若 `KEY_UPDATE_ACK` 超时，发送端会延期激活点并重发；超过重试上限则取消本次换钥。
 11. 指标导出：`Endpoint::GetRuntimeMetrics()` 获取队列、RTO、RTT、重传率、丢包率。
 
+## Manager API 速览
+
+1. `rudp::ConnectionManager::Init(config, hooks)` 初始化多连接路由层。
+2. `Open(key, start_connect)` 创建/查找指定 key 的连接；`Remove(key)` 删除连接。
+3. `OnUdpPacket(key, data, len)` 按 key 路由入站 UDP 包。
+4. `Send/SendZeroCopy/Tick` 在管理器层按 key 操作连接。
+5. 并发场景优先使用 `IsConnected/GetConnectionState/GetStats/GetRuntimeMetrics` 查询接口。
+6. `Find()` 为兼容接口；并发 `Remove/Open` 下返回的 `Endpoint*` 不保证稳定。
+
 ## 当前版本限制
 
 - 以“消息”为单位，不做流式字节拼接。

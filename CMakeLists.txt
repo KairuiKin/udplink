@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(udplink VERSION 0.1.0 LANGUAGES CXX)
+project(udplink VERSION 0.1.1 LANGUAGES CXX)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -7,6 +7,7 @@ include(CMakePackageConfigHelpers)
 option(RUDP_BUILD_TESTS "Build rudp self test" ON)
 option(RUDP_INSTALL "Enable install/export targets" ON)
 option(RUDP_BUILD_EXAMPLES "Build rudp examples" ON)
+option(COVERAGE "Enable coverage flags (GCC/Clang)" OFF)
 
 add_library(rudp STATIC
     src/rudp.cpp
@@ -26,6 +27,15 @@ target_compile_options(rudp PRIVATE
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic>
 )
 
+if(COVERAGE)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g --coverage")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
+    else()
+        message(WARNING "COVERAGE=ON is only supported for GCC/Clang")
+    endif()
+endif()
+
 set_target_properties(rudp PROPERTIES
     OUTPUT_NAME rudp
     EXPORT_NAME rudp
@@ -38,6 +48,22 @@ if(RUDP_BUILD_TESTS)
     target_link_libraries(rudp_bench PRIVATE rudp)
     add_executable(rudp_manager_test tests/manager_test.cpp)
     target_link_libraries(rudp_manager_test PRIVATE rudp)
+endif()
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+    find_program(CLANG_TIDY_EXE NAMES clang-tidy)
+    if(CLANG_TIDY_EXE)
+        add_custom_target(clang-tidy
+            COMMAND ${CLANG_TIDY_EXE}
+                    src/rudp.cpp src/manager.cpp
+                    tests/self_test.cpp tests/manager_test.cpp tests/bench.cpp
+                    examples/basic_endpoint.cpp examples/basic_manager.cpp
+                    -p ${CMAKE_BINARY_DIR}
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            COMMENT "Running clang-tidy"
+        )
+    endif()
 endif()
 
 if(RUDP_BUILD_EXAMPLES)

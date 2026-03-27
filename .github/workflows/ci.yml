@@ -11,8 +11,13 @@ jobs:
   build-unix:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        compiler: [gcc, clang]
+        include:
+          - os: ubuntu-latest
+            cxx: g++
+          - os: ubuntu-latest
+            cxx: clang++
+          - os: macos-latest
+            cxx: clang++
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -21,7 +26,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake build-essential
+          sudo apt-get install -y cmake build-essential clang
       
       - name: Install dependencies (macOS)
         if: matrix.os == 'macos-latest'
@@ -29,7 +34,7 @@ jobs:
           brew install cmake
       
       - name: Configure
-        run: cmake -S . -B build -DRUDP_BUILD_TESTS=ON -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
+        run: cmake -S . -B build -DRUDP_BUILD_TESTS=ON -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
       
       - name: Build
         run: cmake --build build --config Release
@@ -69,7 +74,7 @@ jobs:
       - name: Run clang-tidy
         run: |
           cmake -S . -B build -DRUDP_BUILD_TESTS=ON
-          cmake --build build --target clang-tidy 2>&1 || true
+          cmake --build build --target clang-tidy
 
   # Coverage (Linux only)
   coverage:
@@ -87,6 +92,7 @@ jobs:
         run: |
           cmake --build build
           ./build/rudp_self_test
+          ./build/rudp_manager_test
       
       - name: Coverage Report
         run: |
