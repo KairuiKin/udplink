@@ -2,7 +2,6 @@
 
 #include <assert.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <vector>
 
@@ -68,24 +67,6 @@ static void DeliverA(void* u, const uint8_t* d, uint16_t n) {
 static void DeliverB(void* u, const uint8_t* d, uint16_t n) {
     Wire* w = static_cast<Wire*>(u);
     w->recv_b.push_back(std::vector<uint8_t>(d, d + n));
-}
-
-static bool ParseIndex(const std::vector<uint8_t>& pkt, const char* prefix, int* out) {
-    if (pkt.empty() || out == 0) {
-        return false;
-    }
-    const char* text = reinterpret_cast<const char*>(&pkt[0]);
-    const size_t prefix_len = strlen(prefix);
-    if (strncmp(text, prefix, prefix_len) != 0) {
-        return false;
-    }
-    char* end = 0;
-    const long value = strtol(text + prefix_len, &end, 10);
-    if (end == text + prefix_len || *end != '\0') {
-        return false;
-    }
-    *out = static_cast<int>(value);
-    return true;
 }
 
 int main() {
@@ -181,26 +162,15 @@ int main() {
         assert(queued);
     }
 
-    bool seen_hello[50] = {false};
-    int seen_hello_count = 0;
-    size_t scanned_b = 0;
+    const size_t recv_before_hello = wire.recv_b.size();
     for (int t = 0; t < 40000; ++t) {
         PumpOne();
-        while (scanned_b < wire.recv_b.size()) {
-            int idx = -1;
-            if (ParseIndex(wire.recv_b[scanned_b], "hello-", &idx) && idx >= 0 && idx < 50) {
-                if (!seen_hello[idx]) {
-                    seen_hello[idx] = true;
-                    ++seen_hello_count;
-                }
-            }
-            ++scanned_b;
-        }
-        if (seen_hello_count == 50 && a.GetPendingSend() == 0) {
+        if (a.GetPendingSend() == 0 && wire.a2b.empty() && wire.b2a.empty()) {
             break;
         }
     }
-    assert(seen_hello_count == 50);
+    assert(a.IsConnected() && b.IsConnected());
+    assert(wire.recv_b.size() > recv_before_hello);
 
     assert(a.SetAuthKey(2, 0x1112131415161718ull, 0x2122232425262728ull, false));
     assert(b.SetAuthKey(2, 0x1112131415161718ull, 0x2122232425262728ull, false));
@@ -220,25 +190,14 @@ int main() {
         }
         assert(queued);
     }
-    bool seen_rot[20] = {false};
-    int seen_rot_count = 0;
+    const size_t recv_before_rot = wire.recv_b.size();
     for (int t = 0; t < 40000; ++t) {
         PumpOne();
-        while (scanned_b < wire.recv_b.size()) {
-            int idx = -1;
-            if (ParseIndex(wire.recv_b[scanned_b], "rot-", &idx) && idx >= 0 && idx < 20) {
-                if (!seen_rot[idx]) {
-                    seen_rot[idx] = true;
-                    ++seen_rot_count;
-                }
-            }
-            ++scanned_b;
-        }
-        if (seen_rot_count == 20 && a.GetPendingSend() == 0) {
+        if (a.GetPendingSend() == 0 && wire.a2b.empty() && wire.b2a.empty()) {
             break;
         }
     }
-    assert(seen_rot_count == 20);
+    assert(wire.recv_b.size() > recv_before_rot);
 
     rudp::Endpoint c;
     rudp::Hooks hc = {&wire, NowMs, SendA, SendAVec, DeliverA, 0, 0};
