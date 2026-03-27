@@ -106,7 +106,7 @@ int main() {
     assert(b.Init(cfg, hb));
     assert(a.StartConnect());
 
-    const auto Pump = [&]() {
+    const auto PumpAll = [&]() {
         ++wire.now_ms;
         a.Tick();
         b.Tick();
@@ -121,9 +121,24 @@ int main() {
             a.OnUdpPacket(&pkt[0], static_cast<uint16_t>(pkt.size()));
         }
     };
+    const auto PumpOne = [&]() {
+        ++wire.now_ms;
+        a.Tick();
+        b.Tick();
+        if (!wire.a2b.empty()) {
+            std::vector<uint8_t> pkt = wire.a2b.back();
+            wire.a2b.pop_back();
+            b.OnUdpPacket(&pkt[0], static_cast<uint16_t>(pkt.size()));
+        }
+        if (!wire.b2a.empty()) {
+            std::vector<uint8_t> pkt = wire.b2a.back();
+            wire.b2a.pop_back();
+            a.OnUdpPacket(&pkt[0], static_cast<uint16_t>(pkt.size()));
+        }
+    };
 
     for (int t = 0; t < 2000; ++t) {
-        Pump();
+        PumpAll();
         if (a.IsConnected() && b.IsConnected()) {
             break;
         }
@@ -146,13 +161,13 @@ int main() {
                 break;
             }
             assert(st == rudp::SendStatus::kQueueFull);
-            Pump();
+            PumpOne();
         }
         assert(queued);
     }
 
-    for (int t = 0; t < 15000; ++t) {
-        Pump();
+    for (int t = 0; t < 5000; ++t) {
+        PumpOne();
         if (wire.recv_b.size() == 50 && a.GetPendingSend() == 0) {
             break;
         }
@@ -178,12 +193,12 @@ int main() {
                 break;
             }
             assert(st == rudp::SendStatus::kQueueFull);
-            Pump();
+            PumpOne();
         }
         assert(queued);
     }
-    for (int t = 0; t < 15000; ++t) {
-        Pump();
+    for (int t = 0; t < 5000; ++t) {
+        PumpOne();
         if (wire.recv_b.size() == 70 && a.GetPendingSend() == 0) {
             break;
         }
