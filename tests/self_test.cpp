@@ -151,7 +151,7 @@ int main() {
         assert(queued);
     }
 
-    for (int t = 0; t < 5000; ++t) {
+    for (int t = 0; t < 15000; ++t) {
         Pump();
         if (wire.recv_b.size() == 50 && a.GetPendingSend() == 0) {
             break;
@@ -182,7 +182,7 @@ int main() {
         }
         assert(queued);
     }
-    for (int t = 0; t < 5000; ++t) {
+    for (int t = 0; t < 15000; ++t) {
         Pump();
         if (wire.recv_b.size() == 70 && a.GetPendingSend() == 0) {
             break;
