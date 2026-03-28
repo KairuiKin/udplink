@@ -169,18 +169,19 @@ int main() {
             PumpDue(&wire.b2a, &a, wire.now_ms);
         }
         assert(queued);
-    }
 
-    for (int i = 0; i < 20000; ++i) {
-        ++wire.now_ms;
-        a.Tick();
-        b.Tick();
-        PumpDue(&wire.a2b, &b, wire.now_ms);
-        PumpDue(&wire.b2a, &a, wire.now_ms);
-        if (wire.recv_b.size() == static_cast<size_t>(kMessageCount) &&
-            a.GetPendingSend() == 0) {
-            break;
+        const size_t expected = static_cast<size_t>(i + 1);
+        for (int settle = 0; settle < 8000; ++settle) {
+            ++wire.now_ms;
+            a.Tick();
+            b.Tick();
+            PumpDue(&wire.a2b, &b, wire.now_ms);
+            PumpDue(&wire.b2a, &a, wire.now_ms);
+            if (wire.recv_b.size() >= expected && a.GetPendingSend() == 0) {
+                break;
+            }
         }
+        assert(wire.recv_b.size() == expected);
     }
 
     assert(wire.recv_b.size() == static_cast<size_t>(kMessageCount));
