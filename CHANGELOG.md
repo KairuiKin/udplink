@@ -12,6 +12,32 @@ All notable changes to this project should be documented in this file.
 
 - N/A
 
+### Fixed
+
+- N/A
+
+## 0.1.2 - 2026-03-28
+
+### Added
+
+- Deterministic `rudp_reliability_test` for scripted loss/reorder regression coverage.
+- Standalone `tests/install_consume` package-consumer smoke project.
+- `scripts/release_check.py` for one-command local release verification.
+- Docs pages for benchmarks, API mapping, release plan, release checklist, PR draft, and GitHub release draft.
+
+### Changed
+
+- Embedded example templates updated to the current callback-based API.
+- README and contribution docs now distinguish smoke coverage from reliability regression coverage.
+- CI now validates install/export output with a standalone `find_package(rudp)` consumer smoke build.
+- Benchmark smoke is now executed in CI, and benchmark methodology/sample output is documented.
+- Added an API mapping page to keep embedded/example integrations aligned with the current public interface.
+
+### Fixed
+
+- `Endpoint` re-initialization now resets protocol state explicitly before applying a new config.
+- `ConnectionManager` initialization no longer relies on raw object-level zeroing for endpoint slots.
+
 ## 0.1.1 - 2026-03-27
 
 ### Added

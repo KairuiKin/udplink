@@ -37,7 +37,8 @@
 - `include/rudp/manager.hpp`：多连接管理层 API
 - `src/rudp.cpp`：协议核心实现
 - `src/manager.cpp`：多连接路由与会话管理
-- `tests/self_test.cpp`：丢包/乱序仿真自测
+- `tests/self_test.cpp`：连接/排队/换钥/超时 smoke 自测
+- `tests/reliability_test.cpp`：确定性丢包/乱序回归测试
 
 ## 编译
 
@@ -62,6 +63,7 @@ cmake --install build --config Release
 
 ```bash
 build/rudp_self_test
+build/rudp_reliability_test
 build/rudp_bench
 build/rudp_manager_test
 ```
@@ -83,6 +85,8 @@ build/rudp_example_manager
 - `examples/esp32/esp32_udp.cpp`（ESP32 示例）
 - `examples/raspberry_pi/raspberry_pi_udp.cpp`（Raspberry Pi 示例）
 - `examples/arduino/arduino_udp/arduino_udp.ino`（Arduino 示例）
+
+说明：嵌入式示例已与当前 API 对齐，但仍属于参考模板，不在主 CI 中构建。
 
 Windows 下可执行文件名为 `rudp_self_test.exe`。
 

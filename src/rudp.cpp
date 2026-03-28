@@ -172,7 +172,9 @@ Config ConfigForProfile(ConfigProfile profile) {
 }
 
 Endpoint::Endpoint()
-    : initialized_(false),
+    : cfg_(),
+      hooks_(),
+      initialized_(false),
       next_send_seq_(1),
       recv_next_seq_(1),
       newest_recv_seq_(0),
@@ -189,11 +191,7 @@ Endpoint::Endpoint()
       dup_ack_count_(0),
       pacing_budget_bytes_(0),
       connect_retries_(0),
-      local_session_id_(0),
-      peer_session_id_(0),
-      tx_nonce_counter_(0),
-      rx_replay_max_nonce_(0),
-      rx_replay_bitmap_(0),
+      auth_keys_(),
       tx_key_id_(1),
       pending_tx_key_rotation_(false),
       pending_tx_key_id_(0),
@@ -205,14 +203,63 @@ Endpoint::Endpoint()
       peer_key_rotation_known_(false),
       peer_next_key_id_(0),
       peer_key_activate_nonce_(0),
+      local_session_id_(0),
+      peer_session_id_(0),
+      tx_nonce_counter_(0),
+      rx_replay_max_nonce_(0),
+      rx_replay_bitmap_(0),
       has_peer_session_id_(false),
       conn_state_(ConnectionState::kDisconnected),
-      ack_dirty_(false) {
-    memset(&cfg_, 0, sizeof(cfg_));
-    memset(&hooks_, 0, sizeof(hooks_));
-    memset(send_slots_, 0, sizeof(send_slots_));
-    memset(recv_slots_, 0, sizeof(recv_slots_));
-    memset(&stats_, 0, sizeof(stats_));
+      ack_dirty_(false),
+      send_slots_(),
+      recv_slots_(),
+      stats_() {}
+
+void Endpoint::ResetState() {
+    initialized_ = false;
+    next_send_seq_ = 1;
+    recv_next_seq_ = 1;
+    newest_recv_seq_ = 0;
+    has_recv_seq_ = false;
+    smoothed_rtt_ = 0;
+    rtt_var_ = 0;
+    rto_ms_ = 80;
+    last_ack_flush_ms_ = 0;
+    last_rx_ms_ = 0;
+    last_tx_ms_ = 0;
+    last_connect_try_ms_ = 0;
+    last_seen_ack_ = 0;
+    last_seen_ack_bits_ = 0;
+    dup_ack_count_ = 0;
+    pacing_budget_bytes_ = 0;
+    connect_retries_ = 0;
+    for (uint16_t i = 0; i < kMaxQueue; ++i) {
+        send_slots_[i] = PacketSlot();
+        recv_slots_[i] = RecvSlot();
+    }
+    for (uint8_t i = 0; i < 2; ++i) {
+        auth_keys_[i] = AuthKeySlot();
+    }
+    tx_key_id_ = 1;
+    pending_tx_key_rotation_ = false;
+    pending_tx_key_id_ = 0;
+    pending_tx_activate_nonce_ = 0;
+    pending_tx_key_acknowledged_ = false;
+    pending_tx_old_key_id_ = 0;
+    pending_tx_key_retry_count_ = 0;
+    last_key_update_announce_ms_ = 0;
+    peer_key_rotation_known_ = false;
+    peer_next_key_id_ = 0;
+    peer_key_activate_nonce_ = 0;
+    local_session_id_ = 0;
+    peer_session_id_ = 0;
+    tx_nonce_counter_ = 0;
+    rx_replay_max_nonce_ = 0;
+    rx_replay_bitmap_ = 0;
+    has_peer_session_id_ = false;
+    conn_state_ = ConnectionState::kDisconnected;
+    ack_dirty_ = false;
+    stats_ = Stats();
 }
 
 void Endpoint::Lock() {
@@ -355,6 +402,7 @@ bool Endpoint::Init(const Config& cfg, const Hooks& hooks) {
         return false;
     }
 
+    ResetState();
     cfg_ = cfg;
     hooks_ = hooks;
     rto_ms_ = cfg_.retransmit_min_ms;

@@ -190,6 +190,7 @@ private:
                        const uint8_t* payload, uint16_t payload_len);
     void InsertRecv(uint16_t seq, const uint8_t* payload, uint16_t len);
     void DrainInOrder();
+    void ResetState();
     bool IsSeqLess(uint16_t a, uint16_t b) const;
     bool SeqInWindow(uint16_t seq, uint16_t start, uint16_t window) const;
     uint32_t BuildAckBits(uint16_t newest) const;

@@ -4,10 +4,11 @@
 
 namespace rudp {
 
-ConnectionManager::ConnectionManager() : initialized_(false) {
-    memset(&endpoint_cfg_, 0, sizeof(endpoint_cfg_));
-    memset(&hooks_, 0, sizeof(hooks_));
-    memset(slots_, 0, sizeof(slots_));
+ConnectionManager::ConnectionManager()
+    : initialized_(false),
+      endpoint_cfg_(),
+      hooks_(),
+      slots_() {
     for (uint16_t i = 0; i < kMaxConnections; ++i) {
         slots_[i].ctx.mgr = this;
         slots_[i].ctx.idx = i;

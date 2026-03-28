@@ -44,6 +44,8 @@ set_target_properties(rudp PROPERTIES
 if(RUDP_BUILD_TESTS)
     add_executable(rudp_self_test tests/self_test.cpp)
     target_link_libraries(rudp_self_test PRIVATE rudp)
+    add_executable(rudp_reliability_test tests/reliability_test.cpp)
+    target_link_libraries(rudp_reliability_test PRIVATE rudp)
     add_executable(rudp_bench tests/bench.cpp)
     target_link_libraries(rudp_bench PRIVATE rudp)
     add_executable(rudp_manager_test tests/manager_test.cpp)
@@ -57,7 +59,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         add_custom_target(clang-tidy
             COMMAND ${CLANG_TIDY_EXE}
                     src/rudp.cpp src/manager.cpp
-                    tests/self_test.cpp tests/manager_test.cpp tests/bench.cpp
+                    tests/self_test.cpp tests/reliability_test.cpp tests/manager_test.cpp tests/bench.cpp
                     examples/basic_endpoint.cpp examples/basic_manager.cpp
                     -p ${CMAKE_BINARY_DIR}
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}

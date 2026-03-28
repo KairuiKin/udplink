@@ -40,7 +40,8 @@ Reliable UDP library for embedded and MCU-class targets (C++11).
 - `include/rudp/manager.hpp`: multi-connection manager API
 - `src/rudp.cpp`: protocol implementation
 - `src/manager.cpp`: connection routing/session manager
-- `tests/self_test.cpp`: packet-loss/reorder simulation test
+- `tests/self_test.cpp`: connect/queue/key-rotation/timeout smoke test
+- `tests/reliability_test.cpp`: deterministic loss/reorder regression test
 
 ## Build
 
@@ -65,6 +66,7 @@ cmake --install build --config Release
 
 ```bash
 build/rudp_self_test
+build/rudp_reliability_test
 build/rudp_bench
 build/rudp_manager_test
 ```
@@ -82,6 +84,12 @@ Example sources:
 - `examples/basic_manager.cpp`
 - `examples/socket_posix.cpp` (POSIX UDP socket)
 - `examples/socket_winsock.cpp` (WinSock UDP socket)
+- `examples/stm32/stm32_f4_udp.cpp` (STM32 F4 reference template)
+- `examples/esp32/esp32_udp.cpp` (ESP32 reference template)
+- `examples/raspberry_pi/raspberry_pi_udp.cpp` (Raspberry Pi POSIX example)
+- `examples/arduino/arduino_udp/arduino_udp.ino` (Arduino reference template)
+
+Note: embedded examples are aligned with the current API, but they are still reference templates and are not built in the main CI pipeline.
 
 On Windows, executable is `rudp_self_test.exe`.
 
