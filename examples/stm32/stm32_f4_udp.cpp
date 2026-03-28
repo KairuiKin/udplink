@@ -1,137 +1,98 @@
 /**
  * @file stm32_f4_udp.cpp
- * @brief STM32F4 UDP Example for udplink
- * 
- * This example demonstrates how to use udplink on STM32F4 MCU.
- * Hardware: STM32F4xx + Ethernet (W5500/LWIP)
- * 
- * @note Requires STM32 HAL and LWIP stack
+ * @brief STM32F4 reference template for udplink with the current callback API.
+ *
+ * Replace the placeholder HAL/LwIP hooks in this file with your board support
+ * package. The udplink-facing code is the part intended to stay stable.
  */
 
 #include "rudp/rudp.hpp"
-#include <cstring>
-#include <cstdint>
 
-// STM32 HAL includes (placeholder)
-// #include "stm32f4xx_hal.h"
-// #include "lwip/lwip.h"
+#include <stdint.h>
+#include <string.h>
 
 namespace {
 
-// Configuration for STM32F4
-constexpr uint16_t kLocalPort = 8888;
-constexpr uint16_t kRemotePort = 8889;
-constexpr uint32_t kTickIntervalMs = 10;  // 10ms tick
+static const uint16_t kTickIntervalMs = 10;
 
-// Auth keys (in production, store in secure storage)
-constexpr uint64_t kAuthKey0 = 0x0123456789ABCDEF;
-constexpr uint64_t kAuthKey1 = 0xFEDCBA9876543210;
+static rudp::Endpoint g_endpoint;
 
-// Global endpoint
-rudp::Endpoint* g_endpoint = nullptr;
+static void HardwareInit() {
+    // Initialize clocks, Ethernet/WiFi transport, and your UDP stack here.
+}
 
-// UDP send callback - implement with your network stack
-int UDP_Send(const uint8_t* data, uint32_t len, void* ctx) {
-    // Example: using LWIP
-    // struct pbuf* p = pbuf_alloc(PBUF_TRANSPORT, len, PBUF_RAM);
-    // if (p) {
-    //     memcpy(p->payload, data, len);
-    //     udp_send(ctx, p);
-    //     pbuf_free(p);
-    //     return len;
-    // }
-    (void)data;
-    (void)len;
-    (void)ctx;
+static uint32_t PlatformNowMs() {
+    // Replace with HAL_GetTick() or an equivalent board timer.
     return 0;
 }
 
-// Tick callback - return current time in milliseconds
-uint64_t GetTickMs() {
-    // Example: using HAL
-    // return HAL_GetTick();
-    return 0;
+static bool PlatformSendUdp(const uint8_t* data, uint16_t len) {
+    (void)data;
+    (void)len;
+    // Replace with lwIP/W5500 send implementation.
+    return true;
+}
+
+static bool PlatformPollUdp(uint8_t* data, uint16_t* len) {
+    (void)data;
+    (void)len;
+    // Replace with your non-blocking UDP receive path.
+    return false;
+}
+
+static uint32_t NowMs(void*) {
+    return PlatformNowMs();
+}
+
+static bool SendRaw(void*, const uint8_t* data, uint16_t len) {
+    return PlatformSendUdp(data, len);
+}
+
+static bool SendRawVec(void*,
+                       const uint8_t* head, uint16_t head_len,
+                       const uint8_t* body, uint16_t body_len) {
+    uint8_t frame[rudp::Endpoint::kMaxFrame];
+    if (static_cast<uint32_t>(head_len) + static_cast<uint32_t>(body_len) > sizeof(frame)) {
+        return false;
+    }
+    memcpy(frame, head, head_len);
+    memcpy(frame + head_len, body, body_len);
+    return PlatformSendUdp(frame, static_cast<uint16_t>(head_len + body_len));
+}
+
+static void OnDeliver(void*, const uint8_t* data, uint16_t len) {
+    (void)data;
+    (void)len;
+    // Forward the payload to your application task.
 }
 
 }  // namespace
 
-/**
- * @brief Initialize hardware (Ethernet, UDP)
- */
-void Hardware_Init() {
-    // Initialize HAL
-    // MX_LWIP_Init();
-    
-    // Initialize UDP socket
-    // udp_new();
-    // udp_bind(pcb, IP_ADDR_ANY, kLocalPort);
-}
-
-/**
- * @brief Process incoming UDP packets
- */
-void OnUdpReceive(const uint8_t* data, uint32_t len) {
-    if (g_endpoint) {
-        g_endpoint->OnUdpPacket(data, len);
-    }
-}
-
-/**
- * @brief Main application
- */
 int main() {
-    Hardware_Init();
-    
-    // Configure udplink
-    rudp::Config config = rudp::ConfigForProfile(rudp::kProfileLowPower);
-    config.enable_auth = true;
-    config.auth_key0 = kAuthKey0;
-    config.auth_key1 = kAuthKey1;
-    
-    // Setup callbacks
-    rudp::Hooks hooks;
-    hooks.send = [](const uint8_t* data, uint32_t len, void*) -> int {
-        return UDP_Send(data, len, nullptr);
-    };
-    hooks.get_tick_ms = []() -> uint64_t {
-        return GetTickMs();
-    };
-    hooks.on_connected = []() {
-        // LED on when connected
-        // HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
-    };
-    hooks.on_disconnected = []() {
-        // LED off when disconnected
-        // HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
-    };
-    hooks.on_message = [](const uint8_t* data, uint32_t len) {
-        // Process received message
-    };
-    
-    // Create endpoint
-    g_endpoint = new rudp::Endpoint();
-    g_endpoint->Init(config, hooks);
-    
-    // Start connection to remote
-    // g_endpoint->StartConnect("192.168.1.100", kRemotePort);
-    
-    // Or wait for incoming connections
-    // g_endpoint->StartListen(kLocalPort);
-    
-    // Main loop
-    while (true) {
-        // Process network stack
-        // sys_check_timeouts();
-        
-        // Tick udplink
-        if (g_endpoint) {
-            g_endpoint->Tick();
-        }
-        
-        // Delay
-        // HAL_Delay(kTickIntervalMs);
+    HardwareInit();
+
+    rudp::Config cfg = rudp::ConfigForProfile(rudp::ConfigProfile::kLowPower);
+    cfg.enable_auth = true;
+    cfg.auth_key0 = 0x0123456789ABCDEFull;
+    cfg.auth_key1 = 0xFEDCBA9876543210ull;
+
+    rudp::Hooks hooks = {0, NowMs, SendRaw, SendRawVec, OnDeliver, 0, 0};
+    if (!g_endpoint.Init(cfg, hooks)) {
+        return 1;
     }
-    
-    delete g_endpoint;
-    return 0;
+    if (!g_endpoint.StartConnect()) {
+        return 2;
+    }
+
+    uint8_t rx_buf[1536];
+    for (;;) {
+        uint16_t len = 0;
+        if (PlatformPollUdp(rx_buf, &len) && len > 0) {
+            g_endpoint.OnUdpPacket(rx_buf, len);
+        }
+        g_endpoint.Tick();
+
+        // Sleep or wait on your scheduler for kTickIntervalMs.
+        (void)kTickIntervalMs;
+    }
 }

@@ -1,46 +1,44 @@
 # udplink 维护计划
 
 ## 当前状态
-- 最后更新: 6天前
-- Stars: 0
-- Issues: 0
 
-## 待办事项
+- 已发布 `v0.1.1`，核心库、安装导出、CI 主线可用。
+- 核心验证已分层：`self_test` 负责 smoke，`reliability_test` 负责确定性丢包/乱序回归。
+- 嵌入式示例已切换到当前 `rudp::Hooks` API，但仍作为参考模板维护。
+- `v0.1.2` 发布材料与本地 release check 已准备完成，当前处于可切版状态。
 
-### 高优先级
-- [ ] 完善 CI (添加更多平台)
-- [ ] 添加嵌入式示例 (STM32, ESP32)
-- [ ] 添加性能 benchmark 数据
+## 近期优先级
 
-### 中优先级  
-- [ ] 搭建文档网站
-- [ ] 添加 Rust 绑定
-- [ ] 发技术博客推广
+### P0
 
-### 低优先级
-- [ ] 添加更多测试用例
-- [ ] SIMD 优化
+- [x] 清理 `src/manager.cpp` / `src/rudp.cpp` 中对象级 `memset` 与初始化顺序告警
+- [x] 在 CI 中补充一个安装/消费验证 job
+- [ ] 把嵌入式示例的最小适配步骤拆成更具体的板级说明
 
-## 开发日志
+### P1
 
-### 2026-03-14 (今天)
-- 克隆项目到本地 D:\gitee\udplink
-- 安装 cmake
-- 分析项目结构
-- 制定增长计划 (GROWTH.md)
-- 提交2个文档到Gitee
-- ✅ 添加 STM32 示例 (examples/stm32/stm32_f4_udp.cpp)
-- ✅ 添加 ESP32 示例 (examples/esp32/esp32_udp.cpp)
-- ✅ 添加 Raspberry Pi 示例 (examples/raspberry_pi/)
-- ✅ 添加 Arduino 示例 (examples/arduino/arduino_udp/)
-- ✅ 同步代码到 GitHub (1ec070e)
+- [ ] 完善静态文档站内容与导航
+- [x] 发布一份基准测试方法与样例数据
+- [x] 为示例补充“当前 API 对照表”
 
-### 待办
-- [x] 完善 CI
-- [x] 添加 STM32 示例
-- [x] 添加 ESP32 示例
-- [x] 添加 Raspberry Pi 示例
-- [x] 添加 Arduino 示例
-- [x] 同步到 GitHub
-- [ ] 搭建文档网站
-- [ ] 写技术博客推广
+### P2
+
+- [ ] 评估 Rust 绑定的边界与维护成本
+- [ ] 评估是否需要 PlatformIO 集成样例
+
+## 发布节奏
+
+### `v0.1.2`
+
+- 示例与文档收口
+- reliability 回归测试落地
+- 编译告警治理
+- 打包/消费验证自动化
+
+建议动作：完成最终 diff 检查后开 release PR。
+
+### `v0.2.0`
+
+- 文档站完善
+- 示例矩阵增强
+- 性能数据与生态接入

@@ -1,69 +1,77 @@
 /**
  * @file esp32_udp.cpp
- * @brief ESP32 UDP Example for udplink
- * 
- * This example demonstrates how to use udplink on ESP32.
- * Hardware: ESP32 + Ethernet/WiFi
- * 
- * @note Requires ESP-IDF and lwIP stack
+ * @brief ESP32 reference template for udplink with the current callback API.
+ *
+ * This file is intentionally lightweight: fill in your WiFi/Ethernet setup,
+ * adjust the peer address below, and keep the udplink usage pattern unchanged.
  */
 
 #include "rudp/rudp.hpp"
-#include <cstring>
-#include <cstdint>
+
+#include <stdint.h>
+#include <string.h>
+
+#include <esp_log.h>
+#include <esp_timer.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include <esp_system.h>
-#include <esp_log.h>
-#include <esp_eth.h>
 #include <lwip/sockets.h>
-#include <lwip/netif.h>
-
-static const char* TAG = "udplink_example";
 
 namespace {
 
-constexpr uint16_t kLocalPort = 8888;
-constexpr uint16_t kRemotePort = 8889;
+static const char* kTag = "udplink_esp32";
+static const char* kPeerIp = "192.168.1.100";
+static const uint16_t kLocalPort = 8888;
+static const uint16_t kPeerPort = 8889;
 
-// Auth keys
-constexpr uint64_t kAuthKey0 = 0x0123456789ABCDEF;
-constexpr uint64_t kAuthKey1 = 0xFEDCBA9876543210;
+static rudp::Endpoint g_endpoint;
+static int g_udp_sock = -1;
+static sockaddr_in g_peer_addr;
 
-rudp::Endpoint* g_endpoint = nullptr;
-int g_udp_sock = -1;
-TaskHandle_t g_task_handle = nullptr;
-
-// Send UDP packet
-int UDP_Send(const uint8_t* data, uint32_t len, void* ctx) {
-    if (g_udp_sock < 0) return -1;
-    
-    struct sockaddr_in dest_addr;
-    dest_addr.sin_family = AF_INET;
-    dest_addr.sin_port = htons(kRemotePort);
-    inet_pton(AF_INET, "192.168.1.100", &dest_addr.sin_addr.s_addr);
-    
-    int sent = sendto(g_udp_sock, data, len, 0,
-                      (struct sockaddr*)&dest_addr, sizeof(dest_addr));
-    return (sent > 0) ? sent : -1;
+static uint32_t NowMs(void*) {
+    return static_cast<uint32_t>(esp_timer_get_time() / 1000ull);
 }
 
-// Get tick in milliseconds
-uint64_t GetTickMs() {
-    return esp_timer_get_time() / 1000;
+static bool SendRaw(void*, const uint8_t* data, uint16_t len) {
+    const int sent = sendto(g_udp_sock,
+                            reinterpret_cast<const char*>(data),
+                            static_cast<int>(len),
+                            0,
+                            reinterpret_cast<const sockaddr*>(&g_peer_addr),
+                            sizeof(g_peer_addr));
+    return sent == static_cast<int>(len);
 }
 
-// UDP receive task
-void UDP_Task(void* param) {
+static bool SendRawVec(void*,
+                       const uint8_t* head, uint16_t head_len,
+                       const uint8_t* body, uint16_t body_len) {
+    uint8_t frame[rudp::Endpoint::kMaxFrame];
+    if (static_cast<uint32_t>(head_len) + static_cast<uint32_t>(body_len) > sizeof(frame)) {
+        return false;
+    }
+    memcpy(frame, head, head_len);
+    memcpy(frame + head_len, body, body_len);
+    return SendRaw(0, frame, static_cast<uint16_t>(head_len + body_len));
+}
+
+static void OnDeliver(void*, const uint8_t* data, uint16_t len) {
+    ESP_LOGI(kTag, "received %u bytes: %.*s",
+             static_cast<unsigned>(len),
+             static_cast<int>(len),
+             reinterpret_cast<const char*>(data));
+}
+
+static void ReceiveTask(void*) {
     uint8_t buffer[2048];
-    struct sockaddr_in src_addr;
-    socklen_t addr_len = sizeof(src_addr);
-    
     while (true) {
-        int len = recvfrom(g_udp_sock, buffer, sizeof(buffer), 0,
-                          (struct sockaddr*)&src_addr, &addr_len);
-        if (len > 0 && g_endpoint) {
-            g_endpoint->OnUdpPacket(buffer, len);
+        const int n = recvfrom(g_udp_sock,
+                               reinterpret_cast<char*>(buffer),
+                               sizeof(buffer),
+                               0,
+                               0,
+                               0);
+        if (n > 0) {
+            g_endpoint.OnUdpPacket(buffer, static_cast<uint16_t>(n));
         }
         vTaskDelay(pdMS_TO_TICKS(1));
     }
@@ -72,74 +80,53 @@ void UDP_Task(void* param) {
 }  // namespace
 
 extern "C" void app_main() {
-    ESP_LOGI(TAG, "Starting udplink on ESP32...");
-    
-    // Create UDP socket
     g_udp_sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (g_udp_sock < 0) {
-        ESP_LOGE(TAG, "Failed to create socket");
+        ESP_LOGE(kTag, "failed to create UDP socket");
         return;
     }
-    
-    // Bind to local port
-    struct sockaddr_in local_addr;
+
+    sockaddr_in local_addr;
+    memset(&local_addr, 0, sizeof(local_addr));
     local_addr.sin_family = AF_INET;
-    local_addr.sin_addr.s_addr = INADDR_ANY;
+    local_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     local_addr.sin_port = htons(kLocalPort);
-    
-    if (bind(g_udp_sock, (struct sockaddr*)&local_addr, sizeof(local_addr)) < 0) {
-        ESP_LOGE(TAG, "Failed to bind socket");
-        close(g_udp_sock);
+    if (bind(g_udp_sock, reinterpret_cast<sockaddr*>(&local_addr), sizeof(local_addr)) < 0) {
+        ESP_LOGE(kTag, "failed to bind local port %u", static_cast<unsigned>(kLocalPort));
         return;
     }
-    
-    // Set receive timeout
-    struct timeval tv = { .tv_sec = 0, .tv_usec = 100000 };
-    setsockopt(g_udp_sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-    
-    // Configure udplink
-    rudp::Config config = rudp::ConfigForProfile(rudp::kProfileLowPower);
-    config.enable_auth = true;
-    config.auth_key0 = kAuthKey0;
-    config.auth_key1 = kAuthKey1;
-    
-    // Callbacks
-    rudp::Hooks hooks;
-    hooks.send = [](const uint8_t* data, uint32_t len, void*) -> int {
-        return UDP_Send(data, len, nullptr);
-    };
-    hooks.get_tick_ms = []() -> uint64_t {
-        return GetTickMs();
-    };
-    hooks.on_connected = []() {
-        ESP_LOGI(TAG, "Connected!");
-    };
-    hooks.on_disconnected = []() {
-        ESP_LOGI(TAG, "Disconnected");
-    };
-    hooks.on_message = [](const uint8_t* data, uint32_t len) {
-        ESP_LOGI(TAG, "Received: %.*s", len, data);
-    };
-    
-    // Create endpoint
-    g_endpoint = new rudp::Endpoint();
-    g_endpoint->Init(config, hooks);
-    
-    // Start connection
-    g_endpoint->StartConnect("192.168.1.100", kRemotePort);
-    
-    // Start receive task
-    xTaskCreate(UDP_Task, "udp_rx", 4096, nullptr, 5, &g_task_handle);
-    
-    // Main loop - tick every 10ms
+
+    memset(&g_peer_addr, 0, sizeof(g_peer_addr));
+    g_peer_addr.sin_family = AF_INET;
+    g_peer_addr.sin_port = htons(kPeerPort);
+    inet_pton(AF_INET, kPeerIp, &g_peer_addr.sin_addr);
+
+    rudp::Config cfg = rudp::ConfigForProfile(rudp::ConfigProfile::kLowPower);
+    cfg.enable_auth = true;
+    cfg.auth_key0 = 0x0123456789ABCDEFull;
+    cfg.auth_key1 = 0xFEDCBA9876543210ull;
+
+    rudp::Hooks hooks = {0, NowMs, SendRaw, SendRawVec, OnDeliver, 0, 0};
+    if (!g_endpoint.Init(cfg, hooks)) {
+        ESP_LOGE(kTag, "rudp init failed");
+        return;
+    }
+    if (!g_endpoint.StartConnect()) {
+        ESP_LOGE(kTag, "rudp connect start failed");
+        return;
+    }
+
+    xTaskCreate(ReceiveTask, "udplink_rx", 4096, 0, 5, 0);
+
+    rudp::ConnectionState last_state = rudp::ConnectionState::kDisconnected;
     while (true) {
-        if (g_endpoint) {
-            g_endpoint->Tick();
+        g_endpoint.Tick();
+
+        const rudp::ConnectionState state = g_endpoint.GetConnectionState();
+        if (state != last_state) {
+            ESP_LOGI(kTag, "state=%u", static_cast<unsigned>(state));
+            last_state = state;
         }
         vTaskDelay(pdMS_TO_TICKS(10));
     }
-    
-    // Cleanup
-    if (g_endpoint) delete g_endpoint;
-    if (g_udp_sock >= 0) close(g_udp_sock);
 }

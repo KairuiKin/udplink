@@ -1,67 +1,40 @@
 # Embedded Examples
 
-This directory contains examples for embedded platforms.
+This directory contains reference templates for integrating `udplink` on embedded targets.
+
+## Scope
+
+- These examples are aligned with the current `rudp::Hooks` / `Endpoint::StartConnect()` API.
+- They are not built in the main CI pipeline.
+- Treat them as integration templates: keep the udplink calls, replace the board-specific UDP and timer hooks.
 
 ## Platforms
 
-### STM32 (examples/stm32/)
+### STM32 (`examples/stm32/`)
 
-Example for STM32F4xx MCU with Ethernet (W5500) or WiFi.
+- Target: STM32F4xx with lwIP, W5500, or another UDP-capable transport.
+- Profile: `ConfigProfile::kLowPower` by default.
+- Work to finish locally: timer source, UDP send path, UDP poll path.
 
-**Hardware:**
-- STM32F4xx (F407, F429, etc.)
-- Ethernet: W5500 SPI Ethernet module
-- Or WiFi: ESP8266/ESP32 (as co-processor)
+### ESP32 (`examples/esp32/`)
 
-**Features:**
-- Fixed memory allocation (no heap in core)
-- Low power profile optimized
-- Auth enabled by default
+- Target: ESP-IDF + lwIP sockets.
+- Profile: `ConfigProfile::kLowPower` by default.
+- Work to finish locally: network bring-up, peer address, task sizing.
 
-**Usage:**
-1. Copy `stm32_f4_udp.cpp` to your STM32 project
-2. Implement `Hardware_Init()` for your board
-3. Configure network stack (LWIP)
-4. Adjust `kLocalPort`, `kRemotePort` as needed
+### Arduino (`examples/arduino/arduino_udp/`)
 
----
+- Target: Arduino Ethernet-based boards.
+- Profile: `ConfigProfile::kLowPower` by default.
+- Work to finish locally: board/library selection, IP layout, memory trimming.
 
-### ESP32 (examples/esp32/)
+### Raspberry Pi (`examples/raspberry_pi/`)
 
-Example for Espressif ESP32 with ESP-IDF.
+- Target: Raspberry Pi OS / Linux.
+- Status: standalone POSIX example with current API.
 
-**Hardware:**
-- ESP32 / ESP32-S2 / ESP32-S3 / ESP32-C3
-- Ethernet (LAN8720) or WiFi
+## Notes
 
-**Features:**
-- FreeRTOS integration
-- lwIP socket API
-- Low latency profile
-
-**Usage:**
-1. Add to your ESP-IDF project
-2. Configure component.cmake to include udplink
-3. Update IP address in `kRemotePort`
-4. `idf.py build flash monitor`
-
----
-
-## Memory Requirements
-
-| Platform | RAM | Flash |
-|----------|-----|-------|
-| STM32F4 | ~8KB | ~20KB |
-| ESP32 | ~20KB | ~40KB |
-
-Exact usage depends on config (window size, queue depth, etc.)
-
-## Performance
-
-Typical latency: 1-5ms on local network
-Throughput: Up to 10 Mbps (depends on MCU clock)
-
-## Further Reading
-
-- See `../include/rudp/rudp.hpp` for full API
-- See `../README.md` for protocol details
+- See `examples/socket_posix.cpp` and `examples/socket_winsock.cpp` for the CI-covered desktop path.
+- See `include/rudp/rudp.hpp` for the source of truth on public API.
+- See `docs/api-mapping.md` for the current callback and method mapping used by examples.

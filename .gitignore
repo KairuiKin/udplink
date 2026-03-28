@@ -33,6 +33,11 @@
 
 # Build artifacts
 build/
+build-install/
+build-consume/
+.release-check/
+stage/
+install-out-verify/
 CMakeFiles/
 CMakeCache.txt
 *.cmake
