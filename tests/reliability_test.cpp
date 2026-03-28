@@ -22,6 +22,20 @@ struct Wire {
     std::vector<std::string> recv_b;
 };
 
+static bool ShouldDropA2B(uint32_t tx_count) {
+    return tx_count == 5u || tx_count == 11u || tx_count == 17u || tx_count == 23u;
+}
+
+static uint32_t DelayA2B(uint32_t tx_count) {
+    if (tx_count == 2u || tx_count == 8u || tx_count == 14u || tx_count == 20u) {
+        return 7u;
+    }
+    if (tx_count == 3u || tx_count == 9u || tx_count == 15u || tx_count == 21u) {
+        return 3u;
+    }
+    return 1u;
+}
+
 static uint32_t NowMs(void* u) {
     return static_cast<Wire*>(u)->now_ms;
 }
@@ -40,12 +54,10 @@ static bool QueuePacket(std::vector<ScheduledPacket>* queue,
 static bool SendA(void* u, const uint8_t* data, uint16_t len) {
     Wire* wire = static_cast<Wire*>(u);
     ++wire->a2b_tx_count;
-    if (wire->impair_a2b && (wire->a2b_tx_count % 5u) == 0u) {
+    if (wire->impair_a2b && ShouldDropA2B(wire->a2b_tx_count)) {
         return true;
     }
-    const uint32_t delay = wire->impair_a2b
-        ? (((wire->a2b_tx_count % 2u) == 0u) ? 7u : 1u)
-        : 1u;
+    const uint32_t delay = wire->impair_a2b ? DelayA2B(wire->a2b_tx_count) : 1u;
     return QueuePacket(&wire->a2b, wire->now_ms + delay, data, len);
 }
 
