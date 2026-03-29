@@ -27,6 +27,7 @@ Recent work already landed in the repository:
 - documentation for C ABI quickstart, compatibility, stability gate, current assessment, downstream-baseline decision, and decision playbook
 - doc-state consistency checker in `scripts/check_c_abi_docs.py`, wired into local release verification and CI
 - public C ABI surface snapshot in `docs/c-abi-surface-v1.json`, enforced by `scripts/check_c_abi_surface.py`
+- gate-evaluation helper in `scripts/evaluate_c_abi_gate.py` to separate technical readiness from unresolved governance promises
 - narrow PlatformIO scope definition instead of a broad unsupported matrix
 - drafted board bring-up guide for Arduino Mega 2560 + W5100, now structured as an execution checklist with acceptance criteria
 - maintainer-run pack and host-peer log capture helper for board-backed validation attempts
