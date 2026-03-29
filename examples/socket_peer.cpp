@@ -18,7 +18,7 @@ static void CloseSock(SOCKET s) { closesocket(s); }
 #include <sys/socket.h>
 #include <unistd.h>
 typedef int SOCKET;
-typedef int socklen_compat;
+typedef socklen_t socklen_compat;
 #define INVALID_SOCKET (-1)
 #define SOCKET_ERROR (-1)
 static void CloseSock(int s) { close(s); }
