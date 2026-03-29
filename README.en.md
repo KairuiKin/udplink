@@ -11,6 +11,14 @@ Reliable UDP library for embedded and MCU-class targets (C++11), with fixed-memo
 - PlatformIO remains an Arduino-first narrow path, not a broad embedded support promise.
 - The current C ABI is implemented but not yet declared long-term stable; the repository's current recommendation remains `wait`.
 
+## Documentation Entry Points
+
+- Public landing page: https://kairuikin.github.io/udplink/
+- Rendered docs browser: https://kairuikin.github.io/udplink/guide.html
+- Current project status: `docs/project-status.md`
+- C API quickstart: `docs/c-api-quickstart.md`
+- Arduino Mega W5100 bring-up: `docs/arduino-mega-w5100-bringup.md`
+
 ## Goals
 
 - Reliable, ordered delivery on top of UDP without full TCP complexity.

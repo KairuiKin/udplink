@@ -11,6 +11,14 @@
 - PlatformIO 目前仍是 Arduino-first 的窄路径，本仓库没有承诺广泛板卡矩阵。
 - 当前 C ABI 已实现，但还没有被正式声明为长期稳定；仓库当前推荐仍然是 `wait`。
 
+## 文档入口
+
+- 在线落地页: https://kairuikin.github.io/udplink/
+- 在线文档浏览器: https://kairuikin.github.io/udplink/guide.html
+- 当前项目状态: `docs/project-status.md`
+- C API 快速开始: `docs/c-api-quickstart.md`
+- Arduino Mega W5100 bring-up: `docs/arduino-mega-w5100-bringup.md`
+
 ## 设计目标
 
 - 在 UDP 之上提供可靠、有序传输，而不引入完整 TCP 的复杂度。

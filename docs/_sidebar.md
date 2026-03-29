@@ -26,6 +26,10 @@
 - [C ABI Decision Playbook](c-abi-stability-decision-playbook.md)
 - [C ABI Stable Candidate](c-abi-stable-candidate-change-set.md)
 
+## Articles
+
+- [Why Your MCU Link Probably Should Not Default to TCP](blog/mcu-udp-vs-tcp.md)
+
 ## Maintainer
 
 - [Arduino Mega Maintainer Run](arduino-mega-w5100-maintainer-run.md)
