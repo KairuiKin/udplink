@@ -1,90 +1,181 @@
 ﻿<!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>udplink - Reliable UDP for Embedded Targets</title>
+    <title>udplink - Reliable UDP for Embedded and MCU Targets</title>
+    <meta name="description" content="udplink is a reliable UDP library for embedded and MCU-class targets, with a validated C++ core, a minimal C ABI, installed-package consumers, and an Arduino-first bring-up path.">
+    <meta property="og:title" content="udplink - Reliable UDP for Embedded and MCU Targets">
+    <meta property="og:description" content="See the quickest validation path, current project status, C API entry points, and the maintainer decision path around the current C ABI wait state.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://kairuikin.github.io/udplink/">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --ink: #20303b;
+            --muted: #5e6d78;
+            --surface: #f5f2ea;
+            --panel: #fffdf8;
+            --line: #e7ddd0;
+            --brand: #0f4c5c;
+            --accent: #e36414;
+            --shadow: 0 10px 24px rgba(35, 49, 61, 0.08);
+        }
         body {
-            font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-            line-height: 1.6;
-            color: #23313d;
-            background: #f5f2ea;
+            font-family: "Avenir Next", "PingFang SC", "Microsoft YaHei", sans-serif;
+            line-height: 1.65;
+            color: var(--ink);
+            background: radial-gradient(circle at top, #fff7eb 0%, var(--surface) 48%, #f1eee5 100%);
+        }
+        a { color: inherit; }
+        code {
+            font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+            background: rgba(15, 76, 92, 0.08);
+            padding: 0.1em 0.35em;
+            border-radius: 6px;
+            font-size: 0.95em;
         }
         .hero {
-            background: linear-gradient(140deg, #0f4c5c 0%, #e36414 100%);
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(140deg, #0f4c5c 0%, #155e70 45%, #e36414 100%);
             color: white;
-            padding: 88px 20px 72px;
-            text-align: center;
+            padding: 92px 20px 78px;
+        }
+        .hero::before,
+        .hero::after {
+            content: "";
+            position: absolute;
+            border-radius: 999px;
+            opacity: 0.14;
+            pointer-events: none;
+        }
+        .hero::before {
+            width: 420px;
+            height: 420px;
+            right: -120px;
+            top: -120px;
+            background: #ffd6b1;
+        }
+        .hero::after {
+            width: 260px;
+            height: 260px;
+            left: -80px;
+            bottom: -90px;
+            background: #fff5d6;
+        }
+        .hero-inner {
+            position: relative;
+            z-index: 1;
+            max-width: 1120px;
+            margin: 0 auto;
+        }
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            letter-spacing: 0.04em;
+            font-size: 0.88rem;
         }
         .hero h1 {
-            font-size: 3rem;
-            margin-bottom: 20px;
+            font-size: clamp(2.7rem, 7vw, 4.8rem);
+            line-height: 0.96;
+            margin: 18px 0 18px;
         }
         .hero p {
-            font-size: 1.15rem;
-            opacity: 0.95;
             max-width: 780px;
-            margin: 0 auto 28px;
+            font-size: 1.12rem;
+            opacity: 0.95;
         }
         .hero-links {
             display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 28px;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
             justify-content: center;
+            min-width: 156px;
+            padding: 14px 24px;
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.96;
+        }
+        .btn-primary {
+            background: white;
+            color: var(--brand);
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+        }
+        .hero-tags {
+            display: flex;
             flex-wrap: wrap;
             gap: 10px;
             margin-top: 26px;
         }
-        .btn {
-            display: inline-block;
-            padding: 14px 34px;
-            background: white;
-            color: #0f4c5c;
-            text-decoration: none;
+        .tag {
+            padding: 8px 12px;
             border-radius: 999px;
-            font-weight: 700;
-            transition: transform 0.2s;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            font-size: 0.92rem;
         }
-        .btn:hover { transform: translateY(-2px); }
-        .btn-outline {
-            background: transparent;
-            border: 2px solid white;
-            color: white;
-        }
-        .features {
-            padding: 64px 20px 80px;
-            max-width: 1200px;
+        .wrap {
+            max-width: 1120px;
             margin: 0 auto;
+            padding: 0 20px 88px;
         }
-        .features h2 {
-            text-align: center;
-            margin-bottom: 28px;
+        .section {
+            margin-top: 68px;
+        }
+        .section h2 {
             font-size: 2rem;
+            margin-bottom: 14px;
         }
         .section-copy {
-            max-width: 780px;
-            margin: 0 auto 28px;
-            text-align: center;
-            color: #52636f;
+            max-width: 760px;
+            color: var(--muted);
         }
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
+            gap: 22px;
+            margin-top: 28px;
+        }
+        .grid-3 {
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        }
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
         }
         .card {
-            padding: 28px;
-            border-radius: 18px;
-            background: #fffdf8;
-            border: 1px solid #e6ddd0;
-            box-shadow: 0 10px 24px rgba(35, 49, 61, 0.06);
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            padding: 26px;
+            box-shadow: var(--shadow);
         }
         .card h3 {
-            color: #0f4c5c;
-            margin-bottom: 12px;
+            color: var(--brand);
+            margin-bottom: 10px;
+            font-size: 1.15rem;
         }
-        .card p, .card li {
-            color: #4d5d68;
+        .card p,
+        .card li {
+            color: #455661;
         }
         .card ul {
             padding-left: 18px;
@@ -92,127 +183,230 @@
         .card li + li {
             margin-top: 8px;
         }
-        .code {
-            background: #282c34;
-            color: #abb2bf;
-            padding: 20px;
-            border-radius: 10px;
-            overflow-x: auto;
-            font-size: 0.92rem;
-        }
-        .split {
+        .stat-row {
             display: grid;
-            grid-template-columns: 1.2fr 0.8fr;
-            gap: 22px;
-            margin-top: 26px;
-        }
-        .mini-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 18px;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px;
             margin-top: 22px;
         }
-        .mini-card {
+        .stat {
+            background: white;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 18px;
+        }
+        .stat strong {
             display: block;
-            padding: 22px;
-            border-radius: 16px;
+            color: var(--accent);
+            font-size: 0.92rem;
+            margin-bottom: 6px;
+        }
+        .stat span {
+            color: var(--ink);
+            font-weight: 700;
+            font-size: 1.05rem;
+        }
+        .path-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 18px;
+            margin-top: 26px;
+        }
+        .path-card {
+            display: block;
             text-decoration: none;
-            background: #fff;
-            border: 1px solid #e6ddd0;
-            color: inherit;
-            box-shadow: 0 8px 18px rgba(35, 49, 61, 0.05);
+            background: linear-gradient(180deg, #fffdf8 0%, #fff8ef 100%);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 22px;
+            box-shadow: var(--shadow);
             transition: transform 0.2s, box-shadow 0.2s;
         }
-        .mini-card:hover {
+        .path-card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 12px 24px rgba(35, 49, 61, 0.09);
+            box-shadow: 0 14px 28px rgba(35, 49, 61, 0.12);
         }
-        .mini-card strong {
+        .path-card strong {
             display: block;
-            color: #e36414;
+            color: var(--accent);
             margin-bottom: 8px;
             font-size: 1rem;
         }
-        .mini-card span {
-            color: #52636f;
+        .path-card span {
+            color: var(--muted);
             display: block;
+        }
+        .code-block {
+            background: #272b33;
+            color: #d9e2ec;
+            border-radius: 18px;
+            padding: 22px;
+            box-shadow: var(--shadow);
+            overflow-x: auto;
+        }
+        .code-block pre,
+        .snippet pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+            font-size: 0.94rem;
+            line-height: 1.6;
+        }
+        .snippet {
+            margin-top: 22px;
+            background: #f8f4ec;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 18px;
+        }
+        .minor {
+            margin-top: 12px;
+            color: var(--muted);
+            font-size: 0.94rem;
         }
         .footer {
             text-align: center;
-            padding: 32px 20px 48px;
-            color: #6d7b85;
+            padding: 22px 20px 48px;
+            color: #697781;
         }
         .footer a {
-            color: #0f4c5c;
+            color: var(--brand);
             text-decoration: none;
         }
-        @media (max-width: 860px) {
-            .hero h1 { font-size: 2.3rem; }
-            .split { grid-template-columns: 1fr; }
+        @media (max-width: 760px) {
+            .hero {
+                padding-top: 78px;
+                padding-bottom: 70px;
+            }
+            .btn {
+                width: 100%;
+            }
+            .hero-links {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="hero">
-        <h1>udplink</h1>
-        <p>面向嵌入式与 MCU 场景的可靠 UDP 库。当前仓库已经打通核心协议、最小 C ABI、安装导出与 Windows 主线验证，但 C ABI 仍保持 <code>wait</code> 状态，PlatformIO 仍是 Arduino-first 的窄路径。</p>
-        <div class="hero-links">
-            <a class="btn" href="https://github.com/KairuiKin/udplink">GitHub</a>
-            <a class="btn btn-outline" href="project-status.md">Project Status</a>
-        </div>
-    </div>
-
-    <div class="features">
-        <h2>当前重点</h2>
-        <p class="section-copy">如果你只想快速判断仓库现状：Windows 验证链最完整，C ABI 已实现但尚未声明长期稳定，板级 bring-up 文档已准备好但仍缺真实硬件证据。</p>
-
-        <div class="grid">
-            <div class="card">
-                <h3>已验证内容</h3>
-                <ul>
-                    <li>C++ 核心协议栈可在 Windows / Linux / macOS 构建与测试。</li>
-                    <li>最小 C ABI 已进入测试、安装导出与维护示例路径。</li>
-                    <li>Windows 已验证 <code>ctest</code>、install-consume、C API consumer example、release check。</li>
-                    <li>host-side <code>rudp_example_udp_peer</code> 已可构建，用于后续板级 bring-up。</li>
-                </ul>
+    <section class="hero">
+        <div class="hero-inner">
+            <div class="eyebrow">Reliable UDP for Embedded Targets</div>
+            <h1>udplink</h1>
+            <p>A reliable UDP library for embedded and MCU-class targets. The repository already has a validated C++ core, a minimal C ABI, installed-package consumers, a strong Windows validation path, and an Arduino-first bring-up route for later board-backed verification.</p>
+            <div class="hero-links">
+                <a class="btn btn-primary" href="#quickstart">5-Minute Start</a>
+                <a class="btn btn-secondary" href="guide.html#/">Browse Docs</a>
+                <a class="btn btn-secondary" href="guide.html#/c-api-quickstart">C API Quickstart</a>
+                <a class="btn btn-secondary" href="guide.html#/project-status">Project Status</a>
+                <a class="btn btn-secondary" href="https://github.com/KairuiKin/udplink">GitHub</a>
             </div>
-            <div class="card">
-                <h3>当前约束</h3>
-                <ul>
-                    <li>C ABI 仍处于 <code>wait</code>，还没有被正式声明长期稳定。</li>
-                    <li><code>examples/c_api/install_consume/</code> 还没有被维护者正式提升为首个受支持 downstream baseline。</li>
-                    <li>PlatformIO 仍是 Arduino-first 窄路径，不代表广泛嵌入式支持承诺。</li>
-                </ul>
-            </div>
-            <div class="card">
-                <h3>下一步最有价值的方向</h3>
-                <ul>
-                    <li>保持 Windows build/test/install-consume 持续绿色。</li>
-                    <li>继续收敛 README、首页、release checklist、维护文档之间的重复与漂移。</li>
-                    <li>获取一次真实 Arduino Mega 2560 + W5100 板级证据运行。</li>
-                    <li>之后再决定 C ABI 是继续 <code>wait</code> 还是进入 <code>stable</code>。</li>
-                </ul>
+            <div class="hero-tags">
+                <span class="tag">C++ core validated on Windows / Linux / macOS</span>
+                <span class="tag">Minimal C ABI with installed-package consumers</span>
+                <span class="tag">Windows validation path is currently the strongest</span>
+                <span class="tag">PlatformIO stays Arduino-first and intentionally narrow</span>
             </div>
         </div>
+    </section>
 
-        <h2 style="margin-top: 60px;">快速开始</h2>
-        <div class="code"><pre># clone
-git clone https://github.com/KairuiKin/udplink.git
+    <main class="wrap">
+        <section class="section">
+            <h2>Choose Your Path</h2>
+            <p class="section-copy">The homepage should help you decide where to go next. Start with the path that matches your current goal rather than reading every maintainer page up front.</p>
+            <div class="path-grid">
+                <a class="path-card" href="#quickstart">
+                    <strong>I want to run it quickly</strong>
+                    <span>Clone, build, and run the shortest host-side validation path first.</span>
+                </a>
+                <a class="path-card" href="guide.html#/c-api-quickstart">
+                    <strong>I care about C / FFI</strong>
+                    <span>Jump straight to the minimal public C ABI and the installed-package consumer path.</span>
+                </a>
+                <a class="path-card" href="guide.html#/arduino-mega-w5100-bringup">
+                    <strong>I care about board bring-up</strong>
+                    <span>Use the first narrow reference route: Arduino Mega 2560 + W5100 + host peer.</span>
+                </a>
+                <a class="path-card" href="guide.html#/project-status">
+                    <strong>I want the maturity read</strong>
+                    <span>See shipped scope, validation coverage, blockers, and the current recommended route.</span>
+                </a>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Current Repository Read</h2>
+            <p class="section-copy">These four points capture the current project reality better than a long maintainer status paragraph on the homepage.</p>
+            <div class="stat-row">
+                <div class="stat"><strong>Core validation</strong><span>Windows / Linux / macOS are green</span></div>
+                <div class="stat"><strong>C ABI</strong><span>implemented, but intentionally still wait</span></div>
+                <div class="stat"><strong>Packaging</strong><span>C++ and C consumers are covered</span></div>
+                <div class="stat"><strong>Board path</strong><span>run pack is ready, hardware evidence still missing</span></div>
+            </div>
+            <div class="grid grid-3">
+                <div class="card">
+                    <h3>What is already in place</h3>
+                    <ul>
+                        <li>The C++ protocol core builds and tests on Windows, Linux, and macOS.</li>
+                        <li>The minimal C ABI is exercised by smoke tests, install-consume checks, and a maintained in-repo C example.</li>
+                        <li>The repository has a release-style validation chain with docs checks, surface checks, and install/export verification.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>What is intentionally conservative</h3>
+                    <ul>
+                        <li>The current C ABI is still in <code>wait</code>, not because it lacks implementation, but because the governance promises are not finished.</li>
+                        <li><code>examples/c_api/install_consume/</code> is maintained evidence, but it has not yet been formally adopted as the first supported downstream baseline.</li>
+                        <li>PlatformIO remains an Arduino-first narrow path instead of a broad embedded support promise.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>What is most valuable next</h3>
+                    <ul>
+                        <li>Keep Windows build, test, and install-consume checks green.</li>
+                        <li>Capture one real Arduino Mega 2560 + W5100 evidence run.</li>
+                        <li>Keep the current v1 ABI unchanged until maintainers intentionally close the downstream-baseline and no-break questions.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="quickstart">
+            <h2>5-Minute Start</h2>
+            <p class="section-copy">If you only want to know whether the project works on your machine, start with the host-side validation path. Only then decide whether to continue into C ABI or board bring-up work.</p>
+            <div class="grid grid-2">
+                <div class="card">
+                    <h3>Build and test</h3>
+                    <div class="code-block"><pre>git clone https://github.com/KairuiKin/udplink.git
 cd udplink
 
-# build
 cmake -S . -B build
 cmake --build build --config Release
 
-# test on Unix-like
+# Unix-like
 ctest --test-dir build --output-on-failure
 
-# test on Windows PowerShell
+# Windows PowerShell
 ctest --test-dir build -C Release --output-on-failure</pre></div>
+                    <p class="minor">If you only run one path, Windows is currently the strongest maintained validation route because it includes install-consume and release-style verification.</p>
+                </div>
+                <div class="card">
+                    <h3>What to read next</h3>
+                    <ul>
+                        <li><a href="guide.html#/c-api-quickstart">C API Quickstart</a>: for C, FFI, and ABI-sensitive integration.</li>
+                        <li><a href="guide.html#/arduino-mega-w5100-bringup">Board Bring-Up</a>: for the first narrow hardware-backed route.</li>
+                        <li><a href="guide.html#/project-status">Project Status</a>: for the current maturity read and next-route summary.</li>
+                        <li><a href="https://github.com/KairuiKin/udplink/blob/master/README.md">README</a>: for the fuller Chinese repository guide.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
 
-        <h2 style="margin-top: 36px;">Minimal Endpoint Snippet</h2>
-        <p class="section-copy">This snippet is synced from <code>examples/basic_endpoint.cpp</code> by <code>python scripts/sync_docs_snippets.py</code>.</p>
-        <!-- BEGIN: BASIC_ENDPOINT_SNIPPET -->
+        <section class="section">
+            <h2>Minimal Endpoint Snippet</h2>
+            <p class="section-copy">This block stays synced with the repository source and shows the smallest useful combination of <code>Config</code>, <code>Hooks</code>, and <code>StartConnect()</code>.</p>
+            <div class="snippet">
+                <!-- BEGIN: BASIC_ENDPOINT_SNIPPET -->
 <pre>rudp::Config cfg = rudp::ConfigForProfile(rudp::ConfigProfile::kBalanced);
 cfg.enable_auth = true;
 cfg.auth_key0 = 0x0706050403020100ull;
@@ -225,93 +419,47 @@ rudp::Hooks hb = {&amp;wire, NowMs, SendB, 0, DeliverB, 0, 0};
 if (!a.Init(cfg, ha) || !b.Init(cfg, hb)) return 1;
 a.StartConnect();</pre>
 <!-- END: BASIC_ENDPOINT_SNIPPET -->
-
-        <div class="split">
-            <div class="card">
-                <h3>验证路径</h3>
-                <ul>
-                    <li><code>rudp_self_test</code>: smoke path for connect/queue/timeout behavior.</li>
-                    <li><code>rudp_reliability_test</code>: deterministic loss / reorder regression.</li>
-                    <li><code>rudp_manager_test</code>: multi-connection manager lifecycle and query path.</li>
-                    <li><code>rudp_c_api_test</code>: minimal C ABI lifecycle, config, and query smoke.</li>
-                    <li><code>tests/install_consume</code>: installed-package C++ consumer validation.</li>
-                    <li><code>tests/install_consume_c</code>: installed-package C consumer validation.</li>
-                    <li><code>examples/c_api/install_consume</code>: maintained readable C consumer example.</li>
-                    <li><code>python scripts/release_check.py</code>: release-style local validation chain.</li>
-                </ul>
             </div>
-            <div class="card">
-                <h3>Windows 完成定义</h3>
-                <ul>
-                    <li>Main project <code>Release</code> build succeeds.</li>
-                    <li><code>ctest --test-dir build -C Release --output-on-failure</code> passes.</li>
-                    <li>Install-consume paths configure, build, and run successfully.</li>
-                    <li>Windows consumers prefer <code>rudp_DIR:PATH=&lt;stage&gt;\lib\cmake\rudp</code>.</li>
-                </ul>
-            </div>
-        </div>
+        </section>
 
-        <h2 style="margin-top: 60px;">文档入口</h2>
-        <p class="section-copy">下面这些页面覆盖了当前仓库最关键的维护和决策路径。</p>
-        <div class="mini-grid">
-            <a class="mini-card" href="project-status.md">
-                <strong>Project Status</strong>
-                <span>Current shipped scope, validation coverage, blockers, and next route.</span>
-            </a>
-            <a class="mini-card" href="c-api-quickstart.md">
-                <strong>C API Quickstart</strong>
-                <span>Minimal public C header, return codes, and consumer entry points.</span>
-            </a>
-            <a class="mini-card" href="c-abi-compatibility.md">
-                <strong>C ABI Compatibility</strong>
-                <span>What v1 ABI changes are allowed, forbidden, and release-sensitive.</span>
-            </a>
-            <a class="mini-card" href="c-abi-stability-gate.md">
-                <strong>C ABI Stability Gate</strong>
-                <span>Conditions required before the current C ABI may be declared stable.</span>
-            </a>
-            <a class="mini-card" href="c-abi-stability-assessment.md">
-                <strong>C ABI Assessment</strong>
-                <span>Why the current baseline is still assessed as not yet stable.</span>
-            </a>
-            <a class="mini-card" href="c-abi-downstream-baseline-decision.md">
-                <strong>Baseline Decision</strong>
-                <span>Whether the in-repo C consumer should count as the first supported downstream baseline.</span>
-            </a>
-            <a class="mini-card" href="c-abi-stability-decision-playbook.md">
-                <strong>Decision Playbook</strong>
-                <span>Checklist for keeping wait or intentionally declaring stable.</span>
-            </a>
-            <a class="mini-card" href="c-abi-stable-candidate-change-set.md">
-                <strong>Stable Candidate</strong>
-                <span>Draft-only file-by-file change set for a future intentional stable declaration.</span>
-            </a>
-            <a class="mini-card" href="arduino-mega-w5100-bringup.md">
-                <strong>Board Bring-Up</strong>
-                <span>The first narrow board-backed path: Arduino Mega 2560 + W5100 + host peer.</span>
-            </a>
-            <a class="mini-card" href="arduino-mega-w5100-maintainer-run.md">
-                <strong>Maintainer Run Pack</strong>
-                <span>Operator-focused run sheet, log capture flow, and evidence checklist.</span>
-            </a>
-            <a class="mini-card" href="platformio-rust-scope.md">
-                <strong>PlatformIO / Rust Scope</strong>
-                <span>Why PlatformIO remains narrow and Rust stays deferred for now.</span>
-            </a>
-            <a class="mini-card" href="board-bringup-report-example.md">
-                <strong>Bring-Up Example</strong>
-                <span>What a useful board-backed validation report should look like.</span>
-            </a>
-            <a class="mini-card" href="https://github.com/KairuiKin/udplink/issues">
-                <strong>Issue Backlog</strong>
-                <span>Open issues, follow-up work, and maintainer backlog.</span>
-            </a>
-        </div>
+        <section class="section">
+            <h2>Go Deeper By Role</h2>
+            <p class="section-copy">The site now separates user-facing paths from maintainer-facing decision pages instead of flattening every internal draft onto the homepage.</p>
+            <div class="grid grid-2">
+                <div class="card">
+                    <h3>Use and verify</h3>
+                    <ul>
+                        <li><a href="guide.html#/project-status">Project Status</a>: shipped scope, current blockers, and next route.</li>
+                        <li><a href="guide.html#/c-api-quickstart">C API Quickstart</a>: the minimal public C entry points and installed-package consumer path.</li>
+                        <li><a href="guide.html#/arduino-mega-w5100-bringup">Arduino Mega W5100 Bring-Up</a>: the first documented board-backed route.</li>
+                        <li><a href="guide.html#/arduino-mega-w5100-maintainer-run">Maintainer Run Pack</a>: helper scripts, host-peer capture, and issue-ready report rendering.</li>
+                        <li><a href="guide.html#/benchmarks">Benchmarks</a>: current benchmark framing and release-to-release history.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Decide and maintain</h3>
+                    <ul>
+                        <li><a href="guide.html#/c-abi-compatibility">C ABI Compatibility</a>: what is allowed, forbidden, and release-sensitive in ABI v1.</li>
+                        <li><a href="guide.html#/c-abi-stability-gate">C ABI Stability Gate</a>: what must be true before the ABI may be called stable.</li>
+                        <li><a href="guide.html#/c-abi-stability-assessment">C ABI Assessment</a>: why the current answer is still not yet.</li>
+                        <li><a href="guide.html#/c-abi-downstream-baseline-decision">Baseline Decision</a>: whether the in-repo C consumer should count as the first supported downstream baseline.</li>
+                        <li><a href="guide.html#/c-abi-stability-decision-playbook">Decision Playbook</a>: the explicit wait vs stable decision flow.</li>
+                        <li><a href="guide.html#/c-abi-stable-candidate-change-set">Stable Candidate</a>: the draft file set for a future intentional stable declaration.</li>
+                        <li><a href="guide.html#/drafts-and-records">Drafts and Records</a>: release notes, PR drafts, and stable-declaration helpers collected in one place.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div hidden aria-hidden="true">
+        <a href="c-abi-stability-decision-playbook.md">Decision Playbook source</a>
+        <a href="c-abi-downstream-baseline-decision.md">Baseline Decision source</a>
+        <a href="c-abi-stable-candidate-change-set.md">Stable Candidate source</a>
     </div>
-
     <div class="footer">
         <p><a href="https://github.com/KairuiKin/udplink">Repository</a> | <a href="https://github.com/KairuiKin/udplink/issues">Issues</a></p>
-        <p style="margin-top: 16px;">Apache 2.0 License | &copy; 2026 udplink</p>
+        <p style="margin-top: 14px;">Apache 2.0 License | &copy; 2026 udplink</p>
     </div>
 </body>
 </html>
