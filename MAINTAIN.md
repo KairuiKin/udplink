@@ -78,6 +78,7 @@ If maintainers want to change that answer, use:
 - `docs/c-abi-stability-decision-playbook.md`
 - `scripts/check_c_abi_docs.py`
 - `scripts/check_c_abi_surface.py`
+- `scripts/evaluate_c_abi_gate.py`
 
 ## Validation entry points maintainers should prefer
 
@@ -87,6 +88,7 @@ If maintainers want to change that answer, use:
 - `ctest --test-dir build --output-on-failure` on Unix-like systems
 - `python scripts/release_check.py` for a release-style local pass
 - `python scripts/check_c_abi_surface.py` when touching `include/rudp/rudp_c.h`
+- `python scripts/evaluate_c_abi_gate.py --docs-mode wait` for a quick current-state gate read
 
 ### Install/export validation
 

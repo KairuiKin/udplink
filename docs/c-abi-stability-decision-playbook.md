@@ -12,6 +12,7 @@ Use it together with:
 - `docs/release-checklist.md`
 - `docs/c-abi-surface-v1.json`
 - `scripts/check_c_abi_surface.py`
+- `scripts/evaluate_c_abi_gate.py`
 - `docs/c-abi-stable-candidate-change-set.md`
 
 ## Purpose
@@ -63,6 +64,7 @@ If maintainers keep `wait`, make sure all of the following remain true:
 
 - `python scripts/check_c_abi_docs.py --mode wait` still passes
 - `python scripts/check_c_abi_surface.py` still passes
+- `python scripts/evaluate_c_abi_gate.py --docs-mode wait` still reports the governance blockers clearly
 - no stable-only wording has leaked into the official wait-state docs
 - `docs/c-abi-stability-assessment.md` still says `not yet`
 - `docs/c-abi-downstream-baseline-decision.md` stays `proposed, not yet adopted`
@@ -89,6 +91,7 @@ Do not proceed unless all of the following are true together:
 
 - every item in `docs/c-abi-stability-gate.md` is satisfied
 - `python scripts/check_c_abi_surface.py` passes on the release candidate
+- `python scripts/evaluate_c_abi_gate.py --docs-mode stable --downstream-baseline-adopted --no-near-term-break --require-stable-ready` passes on the release candidate
 - `rudp_c_api_test` passes on the release candidate
 - `tests/install_consume_c/` passes on the release candidate
 - `examples/c_api/install_consume/` passes on the release candidate

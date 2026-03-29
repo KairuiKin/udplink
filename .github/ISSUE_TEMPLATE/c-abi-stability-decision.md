@@ -22,6 +22,7 @@ Choose one:
 - [ ] `docs/c-abi-stable-candidate-change-set.md`
 - [ ] `docs/c-abi-stable-wording-pack.md`
 - [ ] `docs/c-abi-surface-v1.json`
+- [ ] `scripts/evaluate_c_abi_gate.py`
 
 ## Downstream Baseline Decision
 
@@ -35,6 +36,7 @@ State whether maintainers explicitly expect no near-term breaking redesign for t
 
 - `python scripts/check_c_abi_docs.py --mode wait|stable`:
 - `python scripts/check_c_abi_surface.py`:
+- `python scripts/evaluate_c_abi_gate.py --docs-mode wait|stable [--downstream-baseline-adopted] [--no-near-term-break]`:
 - `python scripts/release_check.py`:
 - `rudp_c_api_test`:
 - `tests/install_consume_c/`:

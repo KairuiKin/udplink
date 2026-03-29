@@ -37,6 +37,6 @@ Use this checklist before cutting the next tag.
 
 - Merge target branch into `master`/`main`.
 - Confirm `CHANGELOG.md` keeps `0.1.2 - 2026-03-28` as the release section and that `Unreleased` is either empty or only contains post-release work.
-- If the release claims the C ABI is stable, confirm every gate in `docs/c-abi-stability-gate.md` is met, `docs/c-abi-stability-assessment.md` is updated for that release candidate, and the release notes state that claim explicitly.
+- If the release claims the C ABI is stable, confirm every gate in `docs/c-abi-stability-gate.md` is met, `docs/c-abi-stability-assessment.md` is updated for that release candidate, `python scripts/evaluate_c_abi_gate.py --docs-mode stable --downstream-baseline-adopted --no-near-term-break --require-stable-ready` passes, and the release notes state that claim explicitly.
 - Tag the release commit.
 - Publish GitHub release notes.
