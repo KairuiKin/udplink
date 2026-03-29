@@ -78,6 +78,7 @@ Use these pages as the authoritative route map:
 - `docs/c-abi-stability-assessment.md`
 - `docs/c-abi-downstream-baseline-decision.md`
 - `docs/c-abi-stability-decision-playbook.md`
+- `docs/c-abi-current-wait-decision-record.md`
 - `docs/c-abi-stable-candidate-change-set.md`
 - `docs/c-abi-stable-wording-pack.md`
 - `docs/pr-c-abi-stable-candidate.md`

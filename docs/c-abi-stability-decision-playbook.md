@@ -13,6 +13,7 @@ Use it together with:
 - `docs/c-abi-surface-v1.json`
 - `scripts/check_c_abi_surface.py`
 - `scripts/evaluate_c_abi_gate.py`
+- `docs/c-abi-current-wait-decision-record.md`
 - `docs/c-abi-stable-candidate-change-set.md`
 
 ## Purpose
@@ -37,6 +38,8 @@ If either answer is still no or unclear, the repository should stay on `wait`.
 ## Current Recommended Answer
 
 Current recommended answer: keep `wait`.
+
+For a maintainer-ready repository record of that current answer, see `docs/c-abi-current-wait-decision-record.md`.
 
 Reason:
 
