@@ -1,0 +1,145 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>udplink Docs Browser</title>
+    <meta name="description" content="Rendered documentation browser for udplink, with shared navigation, sidebar structure, and search across the repository docs.">
+    <meta name="theme-color" content="#0f4c5c">
+    <link rel="canonical" href="https://kairuikin.github.io/udplink/guide.html">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify@4.13.1/lib/themes/vue.css">
+    <style>
+        :root {
+            --theme-color: #0f4c5c;
+        }
+        body {
+            background: #f5f2ea;
+        }
+        .shell-banner {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 18px;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #0f4c5c 0%, #155e70 58%, #e36414 100%);
+            color: #fff;
+            box-shadow: 0 10px 24px rgba(35, 49, 61, 0.08);
+        }
+        .shell-banner strong {
+            font-size: 0.95rem;
+            letter-spacing: 0.02em;
+        }
+        .shell-banner span {
+            opacity: 0.9;
+        }
+        .shell-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .shell-links a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 9px 14px;
+            border-radius: 999px;
+            color: #fff;
+            text-decoration: none;
+            border: 1px solid rgba(255, 255, 255, 0.26);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .app-nav {
+            margin-top: 70px;
+        }
+        .app-nav a {
+            color: #20303b;
+        }
+        .sidebar {
+            background: #fffdf8;
+            border-right: 1px solid #e7ddd0;
+        }
+        .sidebar ul li.active > a {
+            color: #0f4c5c;
+            font-weight: 700;
+        }
+        .search {
+            margin-bottom: 18px;
+            padding-top: 10px;
+        }
+        .search input {
+            border: 1px solid #d9cfbf;
+            border-radius: 10px;
+            background: #fff;
+        }
+        .content {
+            padding-top: 22px;
+        }
+        .markdown-section {
+            max-width: 920px;
+            padding: 34px 42px 56px;
+            color: #20303b;
+        }
+        .markdown-section a {
+            color: #0f4c5c;
+            font-weight: 600;
+        }
+        .markdown-section code {
+            color: #20303b;
+        }
+        .markdown-section pre > code {
+            font-size: 0.95rem;
+        }
+        .anchor span {
+            color: #0f4c5c;
+        }
+        @media (max-width: 768px) {
+            .shell-banner {
+                padding: 12px 14px;
+            }
+            .markdown-section {
+                padding: 24px 18px 48px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="shell-banner">
+        <div>
+            <strong>udplink Docs Browser</strong>
+            <span>Rendered markdown with one sidebar, one navbar, and search.</span>
+        </div>
+        <div class="shell-links">
+            <a href="index.html">Landing Page</a>
+            <a href="#/">Docs Home</a>
+            <a href="https://github.com/KairuiKin/udplink">Repository</a>
+        </div>
+    </div>
+    <div id="app">Loading docs...</div>
+    <script>
+        window.$docsify = {
+            name: 'udplink Docs',
+            repo: 'https://github.com/KairuiKin/udplink',
+            homepage: 'README.md',
+            loadSidebar: true,
+            loadNavbar: true,
+            auto2top: true,
+            subMaxLevel: 2,
+            relativePath: true,
+            alias: {
+                '/.*/_sidebar.md': '/_sidebar.md',
+                '/.*/_navbar.md': '/_navbar.md'
+            },
+            search: {
+                paths: 'auto',
+                placeholder: 'Search docs',
+                noData: 'No matching page',
+                depth: 3
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/docsify@4.13.1/lib/docsify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docsify@4.13.1/lib/plugins/search.min.js"></script>
+</body>
+</html>
+

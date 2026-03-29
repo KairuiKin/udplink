@@ -296,8 +296,9 @@
             <p>A reliable UDP library for embedded and MCU-class targets. The repository already has a validated C++ core, a minimal C ABI, installed-package consumers, a strong Windows validation path, and an Arduino-first bring-up route for later board-backed verification.</p>
             <div class="hero-links">
                 <a class="btn btn-primary" href="#quickstart">5-Minute Start</a>
-                <a class="btn btn-secondary" href="c-api-quickstart.md">C API Quickstart</a>
-                <a class="btn btn-secondary" href="project-status.md">Project Status</a>
+                <a class="btn btn-secondary" href="guide.html#/">Browse Docs</a>
+                <a class="btn btn-secondary" href="guide.html#/c-api-quickstart">C API Quickstart</a>
+                <a class="btn btn-secondary" href="guide.html#/project-status">Project Status</a>
                 <a class="btn btn-secondary" href="https://github.com/KairuiKin/udplink">GitHub</a>
             </div>
             <div class="hero-tags">
@@ -318,15 +319,15 @@
                     <strong>I want to run it quickly</strong>
                     <span>Clone, build, and run the shortest host-side validation path first.</span>
                 </a>
-                <a class="path-card" href="c-api-quickstart.md">
+                <a class="path-card" href="guide.html#/c-api-quickstart">
                     <strong>I care about C / FFI</strong>
                     <span>Jump straight to the minimal public C ABI and the installed-package consumer path.</span>
                 </a>
-                <a class="path-card" href="arduino-mega-w5100-bringup.md">
+                <a class="path-card" href="guide.html#/arduino-mega-w5100-bringup">
                     <strong>I care about board bring-up</strong>
                     <span>Use the first narrow reference route: Arduino Mega 2560 + W5100 + host peer.</span>
                 </a>
-                <a class="path-card" href="project-status.md">
+                <a class="path-card" href="guide.html#/project-status">
                     <strong>I want the maturity read</strong>
                     <span>See shipped scope, validation coverage, blockers, and the current recommended route.</span>
                 </a>
@@ -392,9 +393,9 @@ ctest --test-dir build -C Release --output-on-failure</pre></div>
                 <div class="card">
                     <h3>What to read next</h3>
                     <ul>
-                        <li><a href="c-api-quickstart.md">C API Quickstart</a>: for C, FFI, and ABI-sensitive integration.</li>
-                        <li><a href="arduino-mega-w5100-bringup.md">Board Bring-Up</a>: for the first narrow hardware-backed route.</li>
-                        <li><a href="project-status.md">Project Status</a>: for the current maturity read and next-route summary.</li>
+                        <li><a href="guide.html#/c-api-quickstart">C API Quickstart</a>: for C, FFI, and ABI-sensitive integration.</li>
+                        <li><a href="guide.html#/arduino-mega-w5100-bringup">Board Bring-Up</a>: for the first narrow hardware-backed route.</li>
+                        <li><a href="guide.html#/project-status">Project Status</a>: for the current maturity read and next-route summary.</li>
                         <li><a href="https://github.com/KairuiKin/udplink/blob/master/README.md">README</a>: for the fuller Chinese repository guide.</li>
                     </ul>
                 </div>
@@ -428,28 +429,33 @@ a.StartConnect();</pre>
                 <div class="card">
                     <h3>Use and verify</h3>
                     <ul>
-                        <li><a href="project-status.md">Project Status</a>: shipped scope, current blockers, and next route.</li>
-                        <li><a href="c-api-quickstart.md">C API Quickstart</a>: the minimal public C entry points and installed-package consumer path.</li>
-                        <li><a href="arduino-mega-w5100-bringup.md">Arduino Mega W5100 Bring-Up</a>: the first documented board-backed route.</li>
-                        <li><a href="arduino-mega-w5100-maintainer-run.md">Maintainer Run Pack</a>: helper scripts, host-peer capture, and issue-ready report rendering.</li>
-                        <li><a href="benchmarks.md">Benchmarks</a>: current benchmark framing and release-to-release history.</li>
+                        <li><a href="guide.html#/project-status">Project Status</a>: shipped scope, current blockers, and next route.</li>
+                        <li><a href="guide.html#/c-api-quickstart">C API Quickstart</a>: the minimal public C entry points and installed-package consumer path.</li>
+                        <li><a href="guide.html#/arduino-mega-w5100-bringup">Arduino Mega W5100 Bring-Up</a>: the first documented board-backed route.</li>
+                        <li><a href="guide.html#/arduino-mega-w5100-maintainer-run">Maintainer Run Pack</a>: helper scripts, host-peer capture, and issue-ready report rendering.</li>
+                        <li><a href="guide.html#/benchmarks">Benchmarks</a>: current benchmark framing and release-to-release history.</li>
                     </ul>
                 </div>
                 <div class="card">
                     <h3>Decide and maintain</h3>
                     <ul>
-                        <li><a href="c-abi-compatibility.md">C ABI Compatibility</a>: what is allowed, forbidden, and release-sensitive in ABI v1.</li>
-                        <li><a href="c-abi-stability-gate.md">C ABI Stability Gate</a>: what must be true before the ABI may be called stable.</li>
-                        <li><a href="c-abi-stability-assessment.md">C ABI Assessment</a>: why the current answer is still not yet.</li>
-                        <li><a href="c-abi-downstream-baseline-decision.md">Baseline Decision</a>: whether the in-repo C consumer should count as the first supported downstream baseline.</li>
-                        <li><a href="c-abi-stability-decision-playbook.md">Decision Playbook</a>: the explicit wait vs stable decision flow.</li>
-                        <li><a href="c-abi-stable-candidate-change-set.md">Stable Candidate</a>: the draft file set for a future intentional stable declaration.</li>
+                        <li><a href="guide.html#/c-abi-compatibility">C ABI Compatibility</a>: what is allowed, forbidden, and release-sensitive in ABI v1.</li>
+                        <li><a href="guide.html#/c-abi-stability-gate">C ABI Stability Gate</a>: what must be true before the ABI may be called stable.</li>
+                        <li><a href="guide.html#/c-abi-stability-assessment">C ABI Assessment</a>: why the current answer is still not yet.</li>
+                        <li><a href="guide.html#/c-abi-downstream-baseline-decision">Baseline Decision</a>: whether the in-repo C consumer should count as the first supported downstream baseline.</li>
+                        <li><a href="guide.html#/c-abi-stability-decision-playbook">Decision Playbook</a>: the explicit wait vs stable decision flow.</li>
+                        <li><a href="guide.html#/c-abi-stable-candidate-change-set">Stable Candidate</a>: the draft file set for a future intentional stable declaration.</li>
                     </ul>
                 </div>
             </div>
         </section>
     </main>
 
+    <div hidden aria-hidden="true">
+        <a href="c-abi-stability-decision-playbook.md">Decision Playbook source</a>
+        <a href="c-abi-downstream-baseline-decision.md">Baseline Decision source</a>
+        <a href="c-abi-stable-candidate-change-set.md">Stable Candidate source</a>
+    </div>
     <div class="footer">
         <p><a href="https://github.com/KairuiKin/udplink">Repository</a> | <a href="https://github.com/KairuiKin/udplink/issues">Issues</a></p>
         <p style="margin-top: 14px;">Apache 2.0 License | &copy; 2026 udplink</p>
