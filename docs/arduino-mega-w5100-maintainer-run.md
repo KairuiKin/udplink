@@ -30,7 +30,7 @@ Preferred path: initialize a run folder with the helper script so the summary an
 
 ### Windows PowerShell
 
-Fast path that prepares the run directory, rebuilds `rudp_example_udp_peer`, scans serial ports, and prints the exact host-peer / upload / monitor commands:
+Fast path that prepares the run directory, rebuilds `rudp_example_udp_peer`, scans serial ports, prints the exact host-peer / upload / monitor commands, and writes ready-to-run PowerShell helper scripts into the run directory:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\prepare_mega_w5100_run.ps1
@@ -54,6 +54,13 @@ This prints the created run directory and initializes:
 - `board-serial-notes.txt`
 - `board-bringup-report-draft.md`
 
+On Windows, `prepare_mega_w5100_run.ps1` also writes:
+
+- `start-host-peer.ps1`
+- `build-board.ps1`
+- `upload-board.ps1`
+- `monitor-board.ps1`
+
 Fallback manual directory creation is still fine if you do not want to use the helper.
 
 ## Step 1: Build The Host Peer
@@ -75,6 +82,14 @@ cmake --build build --target rudp_example_udp_peer
 ## Step 2: Start The Host Peer With Log Capture
 
 ### Windows PowerShell
+
+If you used `prepare_mega_w5100_run.ps1`, prefer running the generated helper directly:
+
+```powershell
+.\logs\board-runs\<run-id>\start-host-peer.ps1
+```
+
+Equivalent raw command:
 
 ```powershell
 python scripts/run_peer_capture.py --log "$runDir/host-peer.log" -- .\build\Release\rudp_example_udp_peer.exe 192.168.1.100 8889 192.168.1.177 8888
@@ -102,6 +117,8 @@ pio run -e megaatmega2560_w5100
 pio run -e megaatmega2560_w5100 -t upload
 pio device monitor -b 115200
 ```
+
+If you used the Windows fast path, the same commands are already written into the generated `build-board.ps1`, `upload-board.ps1`, and `monitor-board.ps1` files inside the run directory.
 
 If the serial monitor tool can save output directly in your local setup, save it into the same run folder.
 If it cannot, still paste the important serial lines into a text file such as `board-serial-notes.txt`.

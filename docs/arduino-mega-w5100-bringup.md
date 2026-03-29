@@ -99,10 +99,19 @@ Operator checks before starting:
 
 ### Windows PowerShell
 
+Raw command path:
+
 ```powershell
 cmake -S . -B build -DRUDP_BUILD_EXAMPLES=ON -DRUDP_BUILD_TESTS=ON
 cmake --build build --config Release --target rudp_example_udp_peer
 .\build\Release\rudp_example_udp_peer.exe 192.168.1.100 8889 192.168.1.177 8888
+```
+
+Maintainer fast path:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\prepare_mega_w5100_run.ps1
+.\logs\board-runs\<run-id>\start-host-peer.ps1
 ```
 
 ### Linux / macOS
