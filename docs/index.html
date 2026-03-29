@@ -1,76 +1,218 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>udplink - 嵌入式可靠UDP库</title>
+    <title>udplink - Reliable UDP for Embedded Targets</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
-        .hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 80px 20px; text-align: center; }
-        .hero h1 { font-size: 3rem; margin-bottom: 20px; }
-        .hero p { font-size: 1.3rem; opacity: 0.9; max-width: 600px; margin: 0 auto 30px; }
-        .btn { display: inline-block; padding: 15px 40px; background: white; color: #667eea; text-decoration: none; border-radius: 30px; font-weight: bold; margin: 5px; transition: transform 0.2s; }
+        body {
+            font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            line-height: 1.6;
+            color: #23313d;
+            background: #f5f2ea;
+        }
+        .hero {
+            background: linear-gradient(140deg, #0f4c5c 0%, #e36414 100%);
+            color: white;
+            padding: 88px 20px 72px;
+            text-align: center;
+        }
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        .hero p {
+            font-size: 1.15rem;
+            opacity: 0.95;
+            max-width: 780px;
+            margin: 0 auto 28px;
+        }
+        .hero-links {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 26px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 14px 34px;
+            background: white;
+            color: #0f4c5c;
+            text-decoration: none;
+            border-radius: 999px;
+            font-weight: 700;
+            transition: transform 0.2s;
+        }
         .btn:hover { transform: translateY(-2px); }
-        .btn-outline { background: transparent; border: 2px solid white; color: white; }
-        .features { padding: 80px 20px; max-width: 1200px; margin: 0 auto; }
-        .features h2 { text-align: center; margin-bottom: 50px; font-size: 2rem; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
-        .card { padding: 30px; border-radius: 10px; background: #f8f9fa; }
-        .card h3 { color: #667eea; margin-bottom: 15px; }
-        .code { background: #282c34; color: #abb2bf; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 0.9rem; }
-        .footer { background: #282c34; color: #888; padding: 40px 20px; text-align: center; }
-        .footer a { color: #667eea; }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+        }
+        .features {
+            padding: 64px 20px 80px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .features h2 {
+            text-align: center;
+            margin-bottom: 28px;
+            font-size: 2rem;
+        }
+        .section-copy {
+            max-width: 780px;
+            margin: 0 auto 28px;
+            text-align: center;
+            color: #52636f;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        .card {
+            padding: 28px;
+            border-radius: 18px;
+            background: #fffdf8;
+            border: 1px solid #e6ddd0;
+            box-shadow: 0 10px 24px rgba(35, 49, 61, 0.06);
+        }
+        .card h3 {
+            color: #0f4c5c;
+            margin-bottom: 12px;
+        }
+        .card p, .card li {
+            color: #4d5d68;
+        }
+        .card ul {
+            padding-left: 18px;
+        }
+        .card li + li {
+            margin-top: 8px;
+        }
+        .code {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            font-size: 0.92rem;
+        }
+        .split {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 22px;
+            margin-top: 26px;
+        }
+        .mini-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 18px;
+            margin-top: 22px;
+        }
+        .mini-card {
+            display: block;
+            padding: 22px;
+            border-radius: 16px;
+            text-decoration: none;
+            background: #fff;
+            border: 1px solid #e6ddd0;
+            color: inherit;
+            box-shadow: 0 8px 18px rgba(35, 49, 61, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .mini-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(35, 49, 61, 0.09);
+        }
+        .mini-card strong {
+            display: block;
+            color: #e36414;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+        .mini-card span {
+            color: #52636f;
+            display: block;
+        }
+        .footer {
+            text-align: center;
+            padding: 32px 20px 48px;
+            color: #6d7b85;
+        }
+        .footer a {
+            color: #0f4c5c;
+            text-decoration: none;
+        }
+        @media (max-width: 860px) {
+            .hero h1 { font-size: 2.3rem; }
+            .split { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
     <div class="hero">
         <h1>udplink</h1>
-        <p>面向嵌入式/单片机场景的可靠 UDP 传输库（C++11）</p>
-        <a href="https://github.com/KairuiKin/udplink" class="btn">GitHub</a>
-        <a href="https://gitee.com/wanghaonan199105240070/udplink" class="btn btn-outline">Gitee</a>
+        <p>面向嵌入式与 MCU 场景的可靠 UDP 库。当前仓库已经打通核心协议、最小 C ABI、安装导出与 Windows 主线验证，但 C ABI 仍保持 <code>wait</code> 状态，PlatformIO 仍是 Arduino-first 的窄路径。</p>
+        <div class="hero-links">
+            <a class="btn" href="https://github.com/KairuiKin/udplink">GitHub</a>
+            <a class="btn btn-outline" href="project-status.md">Project Status</a>
+        </div>
     </div>
-    
+
     <div class="features">
-        <h2>为什么选择 udplink？</h2>
+        <h2>当前重点</h2>
+        <p class="section-copy">如果你只想快速判断仓库现状：Windows 验证链最完整，C ABI 已实现但尚未声明长期稳定，板级 bring-up 文档已准备好但仍缺真实硬件证据。</p>
+
         <div class="grid">
             <div class="card">
-                <h3>🚀 固定内存</h3>
-                <p>编译时确定，无动态分配，无堆内存需求，MCU 友好</p>
+                <h3>已验证内容</h3>
+                <ul>
+                    <li>C++ 核心协议栈可在 Windows / Linux / macOS 构建与测试。</li>
+                    <li>最小 C ABI 已进入测试、安装导出与维护示例路径。</li>
+                    <li>Windows 已验证 <code>ctest</code>、install-consume、C API consumer example、release check。</li>
+                    <li>host-side <code>rudp_example_udp_peer</code> 已可构建，用于后续板级 bring-up。</li>
+                </ul>
             </div>
             <div class="card">
-                <h3>⚡ 零依赖</h3>
-                <p>纯 C++11 实现，无外部库依赖，易于移植</p>
+                <h3>当前约束</h3>
+                <ul>
+                    <li>C ABI 仍处于 <code>wait</code>，还没有被正式声明长期稳定。</li>
+                    <li><code>examples/c_api/install_consume/</code> 还没有被维护者正式提升为首个受支持 downstream baseline。</li>
+                    <li>PlatformIO 仍是 Arduino-first 窄路径，不代表广泛嵌入式支持承诺。</li>
+                </ul>
             </div>
             <div class="card">
-                <h3>🔒 安全可靠</h3>
-                <p>SipHash 鉴权、双密钥在线换钥、防重放攻击</p>
-            </div>
-            <div class="card">
-                <h3>📦 商用扩展</h3>
-                <p>可插拔网络适配层、可配置窗口/重传策略</p>
+                <h3>下一步最有价值的方向</h3>
+                <ul>
+                    <li>保持 Windows build/test/install-consume 持续绿色。</li>
+                    <li>继续收敛 README、首页、release checklist、维护文档之间的重复与漂移。</li>
+                    <li>获取一次真实 Arduino Mega 2560 + W5100 板级证据运行。</li>
+                    <li>之后再决定 C ABI 是继续 <code>wait</code> 还是进入 <code>stable</code>。</li>
+                </ul>
             </div>
         </div>
-        
+
         <h2 style="margin-top: 60px;">快速开始</h2>
-        <div class="code">
-<pre># 克隆项目
+        <div class="code"><pre># clone
 git clone https://github.com/KairuiKin/udplink.git
 cd udplink
 
-# 编译
+# build
 cmake -S . -B build
 cmake --build build --config Release
 
-# 测试
-./build/rudp_self_test
-./build/rudp_reliability_test
-./build/rudp_manager_test</pre>
-        </div>
-        
-        <h2 style="margin-top: 60px;">代码示例</h2>
-        <div class="code">
-<!-- BEGIN: BASIC_ENDPOINT_SNIPPET -->
+# test on Unix-like
+ctest --test-dir build --output-on-failure
+
+# test on Windows PowerShell
+ctest --test-dir build -C Release --output-on-failure</pre></div>
+
+        <h2 style="margin-top: 36px;">Minimal Endpoint Snippet</h2>
+        <p class="section-copy">This snippet is synced from <code>examples/basic_endpoint.cpp</code> by <code>python scripts/sync_docs_snippets.py</code>.</p>
+        <!-- BEGIN: BASIC_ENDPOINT_SNIPPET -->
 <pre>rudp::Config cfg = rudp::ConfigForProfile(rudp::ConfigProfile::kBalanced);
 cfg.enable_auth = true;
 cfg.auth_key0 = 0x0706050403020100ull;
@@ -83,12 +225,93 @@ rudp::Hooks hb = {&amp;wire, NowMs, SendB, 0, DeliverB, 0, 0};
 if (!a.Init(cfg, ha) || !b.Init(cfg, hb)) return 1;
 a.StartConnect();</pre>
 <!-- END: BASIC_ENDPOINT_SNIPPET -->
+
+        <div class="split">
+            <div class="card">
+                <h3>验证路径</h3>
+                <ul>
+                    <li><code>rudp_self_test</code>: smoke path for connect/queue/timeout behavior.</li>
+                    <li><code>rudp_reliability_test</code>: deterministic loss / reorder regression.</li>
+                    <li><code>rudp_manager_test</code>: multi-connection manager lifecycle and query path.</li>
+                    <li><code>rudp_c_api_test</code>: minimal C ABI lifecycle, config, and query smoke.</li>
+                    <li><code>tests/install_consume</code>: installed-package C++ consumer validation.</li>
+                    <li><code>tests/install_consume_c</code>: installed-package C consumer validation.</li>
+                    <li><code>examples/c_api/install_consume</code>: maintained readable C consumer example.</li>
+                    <li><code>python scripts/release_check.py</code>: release-style local validation chain.</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Windows 完成定义</h3>
+                <ul>
+                    <li>Main project <code>Release</code> build succeeds.</li>
+                    <li><code>ctest --test-dir build -C Release --output-on-failure</code> passes.</li>
+                    <li>Install-consume paths configure, build, and run successfully.</li>
+                    <li>Windows consumers prefer <code>rudp_DIR:PATH=&lt;stage&gt;\lib\cmake\rudp</code>.</li>
+                </ul>
+            </div>
+        </div>
+
+        <h2 style="margin-top: 60px;">文档入口</h2>
+        <p class="section-copy">下面这些页面覆盖了当前仓库最关键的维护和决策路径。</p>
+        <div class="mini-grid">
+            <a class="mini-card" href="project-status.md">
+                <strong>Project Status</strong>
+                <span>Current shipped scope, validation coverage, blockers, and next route.</span>
+            </a>
+            <a class="mini-card" href="c-api-quickstart.md">
+                <strong>C API Quickstart</strong>
+                <span>Minimal public C header, return codes, and consumer entry points.</span>
+            </a>
+            <a class="mini-card" href="c-abi-compatibility.md">
+                <strong>C ABI Compatibility</strong>
+                <span>What v1 ABI changes are allowed, forbidden, and release-sensitive.</span>
+            </a>
+            <a class="mini-card" href="c-abi-stability-gate.md">
+                <strong>C ABI Stability Gate</strong>
+                <span>Conditions required before the current C ABI may be declared stable.</span>
+            </a>
+            <a class="mini-card" href="c-abi-stability-assessment.md">
+                <strong>C ABI Assessment</strong>
+                <span>Why the current baseline is still assessed as not yet stable.</span>
+            </a>
+            <a class="mini-card" href="c-abi-downstream-baseline-decision.md">
+                <strong>Baseline Decision</strong>
+                <span>Whether the in-repo C consumer should count as the first supported downstream baseline.</span>
+            </a>
+            <a class="mini-card" href="c-abi-stability-decision-playbook.md">
+                <strong>Decision Playbook</strong>
+                <span>Checklist for keeping wait or intentionally declaring stable.</span>
+            </a>
+            <a class="mini-card" href="c-abi-stable-candidate-change-set.md">
+                <strong>Stable Candidate</strong>
+                <span>Draft-only file-by-file change set for a future intentional stable declaration.</span>
+            </a>
+            <a class="mini-card" href="arduino-mega-w5100-bringup.md">
+                <strong>Board Bring-Up</strong>
+                <span>The first narrow board-backed path: Arduino Mega 2560 + W5100 + host peer.</span>
+            </a>
+            <a class="mini-card" href="arduino-mega-w5100-maintainer-run.md">
+                <strong>Maintainer Run Pack</strong>
+                <span>Operator-focused run sheet, log capture flow, and evidence checklist.</span>
+            </a>
+            <a class="mini-card" href="platformio-rust-scope.md">
+                <strong>PlatformIO / Rust Scope</strong>
+                <span>Why PlatformIO remains narrow and Rust stays deferred for now.</span>
+            </a>
+            <a class="mini-card" href="board-bringup-report-example.md">
+                <strong>Bring-Up Example</strong>
+                <span>What a useful board-backed validation report should look like.</span>
+            </a>
+            <a class="mini-card" href="https://github.com/KairuiKin/udplink/issues">
+                <strong>Issue Backlog</strong>
+                <span>Open issues, follow-up work, and maintainer backlog.</span>
+            </a>
         </div>
     </div>
-    
+
     <div class="footer">
-        <p>📚 <a href="blog/mcu-udp-vs-tcp.md">博客</a> | <a href="https://github.com/KairuiKin/udplink">仓库</a> | <a href="https://github.com/KairuiKin/udplink/issues">Issues</a></p>
-        <p style="margin-top: 20px;">Apache 2.0 License | &copy; 2024 udplink</p>
+        <p><a href="https://github.com/KairuiKin/udplink">Repository</a> | <a href="https://github.com/KairuiKin/udplink/issues">Issues</a></p>
+        <p style="margin-top: 16px;">Apache 2.0 License | &copy; 2026 udplink</p>
     </div>
 </body>
 </html>

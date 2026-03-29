@@ -1,6 +1,6 @@
 # Benchmarks
 
-This page describes the current `rudp_bench` smoke benchmark and records a local sample run.
+This page documents the current `rudp_bench` smoke benchmark and keeps a small release-to-release archive of sample outputs.
 
 ## What `rudp_bench` measures
 
@@ -26,19 +26,29 @@ cmake --build build --config Release
 build/rudp_bench
 ```
 
-## Local sample
+## Recording Rules
 
-Environment:
+Each archived sample should record:
 
-- Date: `2026-03-28`
-- Host: local Windows development machine
-- Build: `Release`
+- release or commit identifier
+- date
+- platform / OS
+- build type
+- benchmark output line
 
-Sample output:
+Only compare samples that keep the same benchmark shape from `tests/bench.cpp`.
 
-```text
-rudp bench: messages=20000 payload=96B time=0.033s msg/s=606060.6 MB/s=55.49
-```
+## Release History
+
+| Release | Date | Platform | Build | Sample Output |
+|---------|------|----------|-------|---------------|
+| `v0.1.2` | `2026-03-28` | Windows local dev machine | `Release` | `rudp bench: messages=20000 payload=96B time=0.033s msg/s=606060.6 MB/s=55.49` |
+
+## Current Sample Notes
+
+- The `v0.1.2` sample is a local Windows run, not a cross-platform median.
+- CI currently verifies that `rudp_bench` runs, but does not archive performance outputs automatically.
+- Future entries should stay conservative and avoid mixing unlike environments.
 
 ## How to interpret results
 

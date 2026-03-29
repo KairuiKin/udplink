@@ -21,29 +21,30 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install dependencies (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y cmake build-essential clang
-      
+
       - name: Install dependencies (macOS)
         if: matrix.os == 'macos-latest'
         run: |
           brew install cmake
-      
+
       - name: Configure
         run: cmake -S . -B build -DRUDP_BUILD_TESTS=ON -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
-      
+
       - name: Build
         run: cmake --build build --config Release
-      
+
       - name: Test
         run: |
           ./build/rudp_self_test
           ./build/rudp_reliability_test
           ./build/rudp_manager_test
+          ./build/rudp_c_api_test
           ./build/rudp_bench
 
   # Windows build
@@ -51,30 +52,52 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Configure
-        run: cmake -S . -B build -G "Visual Studio 17 2022" -DRUDP_BUILD_TESTS=ON
-      
+        run: cmake -S . -B build -DRUDP_BUILD_TESTS=ON
+
       - name: Build
         run: cmake --build build --config Release
-      
+
       - name: Test
         shell: powershell
         run: |
-          .\build\Release\rudp_self_test.exe
-          .\build\Release\rudp_reliability_test.exe
-          .\build\Release\rudp_manager_test.exe
-          .\build\Release\rudp_bench.exe
+          ctest --test-dir build -C Release --output-on-failure
+
+      - name: Prepare board run pack smoke
+        shell: powershell
+        run: |
+          Remove-Item -Recurse -Force .\logs\board-runs\ci-prepare-smoke -ErrorAction SilentlyContinue
+          powershell -ExecutionPolicy Bypass -File .\scripts\prepare_mega_w5100_run.ps1 -RunId ci-prepare-smoke
+          if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\start-host-peer.ps1)) { throw 'missing start-host-peer.ps1' }
+          if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\build-board.ps1)) { throw 'missing build-board.ps1' }
+          if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\upload-board.ps1)) { throw 'missing upload-board.ps1' }
+          if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\monitor-board.ps1)) { throw 'missing monitor-board.ps1' }
+          if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\render-report.ps1)) { throw 'missing render-report.ps1' }
+          if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\run-summary.txt)) { throw 'missing run-summary.txt' }
+          powershell -ExecutionPolicy Bypass -File .\logs\board-runs\ci-prepare-smoke\render-report.ps1
+          if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\board-bringup-report.md)) { throw 'missing board-bringup-report.md' }
+
+  docs-consistency:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check C ABI docs consistency
+        run: python scripts/check_c_abi_docs.py --mode wait
+
+      - name: Check C ABI surface baseline
+        run: python scripts/check_c_abi_surface.py
 
   # Code quality
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install clang-tidy
         run: sudo apt-get install -y clang-tidy
-      
+
       - name: Run clang-tidy
         run: |
           cmake -S . -B build -DRUDP_BUILD_TESTS=ON
@@ -85,28 +108,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install dependencies
         run: sudo apt-get install -y cmake build-essential lcov
-      
+
       - name: Configure with coverage
         run: cmake -S . -B build -DRUDP_BUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON
-      
+
       - name: Build & Test
         run: |
           cmake --build build
           ./build/rudp_self_test
           ./build/rudp_reliability_test
           ./build/rudp_manager_test
+          ./build/rudp_c_api_test
           ./build/rudp_bench
-      
+
       - name: Coverage Report
         run: |
           lcov --capture --directory build --output-file coverage.info
           lcov --remove coverage.info '/usr/*' --output-file filtered.info
           curl -s https://codecov.io/upload -F coverage=@filtered.info || true
 
-  install-consume:
+  install-consume-linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -120,11 +144,60 @@ jobs:
           cmake --build build-install --config Release
           cmake --install build-install --prefix "$PWD/stage"
 
-      - name: Configure consumer
+      - name: Configure consumers
         run: |
           cmake -S tests/install_consume -B build-consume -DCMAKE_PREFIX_PATH="$PWD/stage"
+          cmake -S tests/install_consume_c -B build-consume-c -DCMAKE_PREFIX_PATH="$PWD/stage"
+          cmake -S examples/c_api/install_consume -B build-example-c-api -DCMAKE_PREFIX_PATH="$PWD/stage"
 
-      - name: Build and run consumer
+      - name: Build and run consumers
         run: |
           cmake --build build-consume --config Release
           ./build-consume/rudp_install_consume
+          cmake --build build-consume-c --config Release
+          ./build-consume-c/rudp_install_consume_c
+          cmake --build build-example-c-api --config Release
+          ./build-example-c-api/rudp_c_api_example
+
+  install-consume-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and install package
+        shell: powershell
+        run: |
+          cmake -S . -B build-install -DRUDP_INSTALL=ON -DRUDP_BUILD_TESTS=OFF -DRUDP_BUILD_EXAMPLES=OFF
+          cmake --build build-install --config Release
+          cmake --install build-install --config Release --prefix "$PWD\stage"
+
+      - name: Configure consumers
+        shell: powershell
+        run: |
+          cmake -S tests/install_consume -B build-consume -Drudp_DIR:PATH="$PWD\stage\lib\cmake\rudp"
+          cmake -S tests/install_consume_c -B build-consume-c -Drudp_DIR:PATH="$PWD\stage\lib\cmake\rudp"
+          cmake -S examples/c_api/install_consume -B build-example-c-api -Drudp_DIR:PATH="$PWD\stage\lib\cmake\rudp"
+
+      - name: Build and run consumers
+        shell: powershell
+        run: |
+          cmake --build build-consume --config Release
+          .\build-consume\Release\rudp_install_consume.exe
+          cmake --build build-consume-c --config Release
+          .\build-consume-c\Release\rudp_install_consume_c.exe
+          cmake --build build-example-c-api --config Release
+          .\build-example-c-api\Release\rudp_c_api_example.exe
+
+  embedded-template-compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get install -y cmake build-essential
+
+      - name: Configure embedded template compile
+        run: cmake -S tests/embedded_compile -B build-embedded
+
+      - name: Build embedded template compile target
+        run: cmake --build build-embedded --target embedded-template-compile
