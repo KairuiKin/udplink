@@ -1,7 +1,0 @@
-﻿- [Landing](index.html)
-- [Docs Home](README.md)
-- [Project Status](project-status.md)
-- [C API](c-api-quickstart.md)
-- [Board Bring-Up](arduino-mega-w5100-bringup.md)
-- [GitHub](https://github.com/KairuiKin/udplink)
-- [Issues](https://github.com/KairuiKin/udplink/issues)

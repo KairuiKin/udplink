@@ -30,4 +30,5 @@
 
 - [Arduino Mega Maintainer Run](arduino-mega-w5100-maintainer-run.md)
 - [PlatformIO and Rust Scope](platformio-rust-scope.md)
+- [Drafts and Records](drafts-and-records.md)
 - [Issues](https://github.com/KairuiKin/udplink/issues)

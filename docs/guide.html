@@ -26,12 +26,17 @@
             color: #fff;
             box-shadow: 0 10px 24px rgba(35, 49, 61, 0.08);
         }
-        .shell-banner strong {
-            font-size: 0.95rem;
+        .shell-copy {
+            display: grid;
+            gap: 4px;
+        }
+        .shell-copy strong {
+            font-size: 0.98rem;
             letter-spacing: 0.02em;
         }
-        .shell-banner span {
+        .shell-copy span {
             opacity: 0.9;
+            font-size: 0.92rem;
         }
         .shell-links {
             display: flex;
@@ -49,10 +54,14 @@
             border: 1px solid rgba(255, 255, 255, 0.26);
             background: rgba(255, 255, 255, 0.08);
         }
-        .app-nav {
-            margin-top: 70px;
+        .shell-links a:hover {
+            background: rgba(255, 255, 255, 0.14);
         }
-        .app-nav a {
+        .app-name {
+            padding-top: 14px;
+        }
+        .app-name-link,
+        .sidebar-nav a {
             color: #20303b;
         }
         .sidebar {
@@ -73,12 +82,17 @@
             background: #fff;
         }
         .content {
-            padding-top: 22px;
+            padding-top: 12px;
         }
         .markdown-section {
             max-width: 920px;
             padding: 34px 42px 56px;
             color: #20303b;
+        }
+        .markdown-section h1,
+        .markdown-section h2,
+        .markdown-section h3 {
+            color: #16242d;
         }
         .markdown-section a {
             color: #0f4c5c;
@@ -86,6 +100,11 @@
         }
         .markdown-section code {
             color: #20303b;
+        }
+        .markdown-section pre,
+        .markdown-section table,
+        .markdown-section blockquote {
+            box-shadow: 0 8px 20px rgba(35, 49, 61, 0.04);
         }
         .markdown-section pre > code {
             font-size: 0.95rem;
@@ -97,6 +116,9 @@
             .shell-banner {
                 padding: 12px 14px;
             }
+            .shell-copy span {
+                font-size: 0.88rem;
+            }
             .markdown-section {
                 padding: 24px 18px 48px;
             }
@@ -105,13 +127,15 @@
 </head>
 <body>
     <div class="shell-banner">
-        <div>
+        <div class="shell-copy">
             <strong>udplink Docs Browser</strong>
-            <span>Rendered markdown with one sidebar, one navbar, and search.</span>
+            <span>Rendered markdown with one sidebar, search, and a cleaner split between public docs and maintainer drafts.</span>
         </div>
         <div class="shell-links">
             <a href="index.html">Landing Page</a>
             <a href="#/">Docs Home</a>
+            <a href="#/drafts-and-records">Drafts</a>
+            <a href="https://github.com/KairuiKin/udplink/issues">Issues</a>
             <a href="https://github.com/KairuiKin/udplink">Repository</a>
         </div>
     </div>
@@ -122,13 +146,10 @@
             repo: 'https://github.com/KairuiKin/udplink',
             homepage: 'README.md',
             loadSidebar: true,
-            loadNavbar: true,
             auto2top: true,
             subMaxLevel: 2,
-            relativePath: true,
             alias: {
-                '/.*/_sidebar.md': '/_sidebar.md',
-                '/.*/_navbar.md': '/_navbar.md'
+                '/.*/_sidebar.md': '/_sidebar.md'
             },
             search: {
                 paths: 'auto',
@@ -142,4 +163,3 @@
     <script src="https://cdn.jsdelivr.net/npm/docsify@4.13.1/lib/plugins/search.min.js"></script>
 </body>
 </html>
-

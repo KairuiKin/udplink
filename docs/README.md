@@ -1,6 +1,6 @@
 ﻿# udplink Docs
 
-This browser renders the repository markdown with one shared sidebar, one shared navbar, and search.
+This browser renders the repository markdown with one shared sidebar and search.
 If you want the visual project landing page instead, open [Landing Page](index.html).
 
 ## Start Here
@@ -29,4 +29,5 @@ If you want the visual project landing page instead, open [Landing Page](index.h
 
 - [Arduino Mega Maintainer Run](arduino-mega-w5100-maintainer-run.md)
 - [PlatformIO and Rust Scope](platformio-rust-scope.md)
+- [Drafts and Records](drafts-and-records.md)
 - [Repository Issues](https://github.com/KairuiKin/udplink/issues)

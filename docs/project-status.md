@@ -74,16 +74,18 @@ Avoid these until the current route is closed:
 
 Use these pages as the authoritative route map:
 
+### Official decision and validation pages
+
 - `docs/c-abi-stability-gate.md`
 - `docs/c-abi-stability-assessment.md`
 - `docs/c-abi-downstream-baseline-decision.md`
 - `docs/c-abi-stability-decision-playbook.md`
 - `docs/c-abi-stable-candidate-change-set.md`
-- `docs/c-abi-stable-wording-pack.md`
-- `docs/pr-c-abi-stable-candidate.md`
-- `docs/c-abi-stable-patch-draft.md`
 - `docs/board-bringup-report-example.md`
 - `docs/arduino-mega-w5100-bringup.md`
 - `docs/arduino-mega-w5100-maintainer-run.md`
-- `docs/issue-drafts-post-v0.1.2.md`
 - `MAINTAIN.md`
+
+### Draft and release records
+
+- `docs/drafts-and-records.md`
