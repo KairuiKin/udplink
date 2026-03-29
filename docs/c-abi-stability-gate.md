@@ -21,6 +21,7 @@ Current repository position:
 - smoke coverage exists in `tests/c_api_test.cpp`
 - installed-package C consumption exists in `tests/install_consume_c/`
 - compatibility rules exist in `docs/c-abi-compatibility.md`
+- public surface snapshot enforcement exists in `docs/c-abi-surface-v1.json` and `scripts/check_c_abi_surface.py`
 
 Current decision:
 
@@ -42,6 +43,7 @@ The first stable C ABI baseline may be declared only when all items below are tr
 
 At minimum, the following must pass on the release candidate that would make the stability claim:
 
+- `python scripts/check_c_abi_surface.py`
 - `rudp_c_api_test`
 - installed-package C consumer in `tests/install_consume_c/`
 - full `python scripts/release_check.py`
@@ -108,7 +110,7 @@ This is an engineering assessment of the repository as it exists today, not a fo
 Current read:
 
 - surface discipline: likely met
-- ABI-sensitive tests and install-consume coverage: likely met, with installed-package C consumption now configured on both Linux and Windows CI paths
+- ABI-sensitive tests, install-consume coverage, and public surface snapshot enforcement: likely met, with installed-package C consumption now configured on both Linux and Windows CI paths
 - install/package shape: likely close to ready
 - docs alignment: met after the current documentation sync
 - credible downstream consumer story: not clearly met yet beyond smoke-consumer coverage

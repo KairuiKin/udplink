@@ -15,7 +15,7 @@ Current answer: not yet.
 
 Reason:
 
-- the repository now has a small implemented ABI, written compatibility rules, CI-backed install-consume coverage, a maintained in-repo C consumer example, and aligned documentation
+- the repository now has a small implemented ABI, written compatibility rules, a checked-in public surface snapshot, CI-backed install-consume coverage, a maintained in-repo C consumer example, and aligned documentation
 - but it still does not clearly satisfy the gate requirement for at least one credible downstream consumer story
 - maintainers also have not yet written an explicit "no near-term ABI break expected" confirmation tied to a release candidate
 
@@ -48,8 +48,9 @@ Evidence:
 - `tests/c_api_test.cpp` exists and is wired into the normal test build
 - `tests/install_consume_c/` validates installed-package C consumption
 - `examples/c_api/install_consume/` is now part of the maintained validation path
-- `scripts/release_check.py` includes the C ABI path and maintained C consumer example
-- CI now runs C installed-package consumption and the maintained C consumer example on both Linux and Windows
+- `scripts/check_c_abi_surface.py` now compares `include/rudp/rudp_c.h` against the checked-in v1 snapshot in `docs/c-abi-surface-v1.json`
+- `scripts/release_check.py` includes the C ABI path, the public surface snapshot check, and the maintained C consumer example
+- CI now runs the surface snapshot check plus C installed-package consumption and the maintained C consumer example on both Linux and Windows
 
 Limit:
 
@@ -60,6 +61,8 @@ Relevant files:
 - `tests/c_api_test.cpp`
 - `tests/install_consume_c/`
 - `examples/c_api/install_consume/`
+- `docs/c-abi-surface-v1.json`
+- `scripts/check_c_abi_surface.py`
 - `scripts/release_check.py`
 - `.github/workflows/ci.yml`
 
