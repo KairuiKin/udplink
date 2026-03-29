@@ -41,9 +41,7 @@ try {
     $runDir = Join-Path $repoRoot (Join-Path 'logs\board-runs' $RunId)
     python scripts/init_board_run.py --run-id $RunId --board $Board --shield $Shield --platformio-env $PlatformIoEnv | Out-Null
 
-    if (-not (Test-Path 'build')) {
-        cmake -S . -B build -DRUDP_BUILD_EXAMPLES=ON -DRUDP_BUILD_TESTS=ON
-    }
+    cmake -S . -B build -DRUDP_BUILD_EXAMPLES=ON -DRUDP_BUILD_TESTS=ON
     cmake --build build --config Release --target rudp_example_udp_peer
 
     $peerExe = Join-Path $repoRoot 'build\Release\rudp_example_udp_peer.exe'

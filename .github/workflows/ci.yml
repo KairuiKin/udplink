@@ -64,6 +64,17 @@ jobs:
         run: |
           ctest --test-dir build -C Release --output-on-failure
 
+      - name: Prepare board run pack smoke
+        shell: powershell
+        run: |
+          Remove-Item -Recurse -Force .\logs\board-runs\ci-prepare-smoke -ErrorAction SilentlyContinue
+          powershell -ExecutionPolicy Bypass -File .\scripts\prepare_mega_w5100_run.ps1 -RunId ci-prepare-smoke
+          if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\start-host-peer.ps1)) { throw 'missing start-host-peer.ps1' }
+          if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\build-board.ps1)) { throw 'missing build-board.ps1' }
+          if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\upload-board.ps1)) { throw 'missing upload-board.ps1' }
+          if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\monitor-board.ps1)) { throw 'missing monitor-board.ps1' }
+          if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\run-summary.txt)) { throw 'missing run-summary.txt' }
+
   docs-consistency:
     runs-on: ubuntu-latest
     steps:
