@@ -11,6 +11,7 @@ Target cut date: `2026-03-28`
 - Updated embedded examples to the current `rudp::Hooks` / `Endpoint::StartConnect()` API.
 - Added install/export validation with a standalone `find_package(rudp)` consumer.
 - Added benchmark methodology and a local sample result page.
+- Added a release-history format for benchmark samples.
 - Added an API mapping page for keeping examples aligned with the current public API.
 - Added a one-command local release verification script.
 - Removed unsafe object-level zeroing from `ConnectionManager` initialization.

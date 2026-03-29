@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(udplink VERSION 0.1.1 LANGUAGES CXX)
+project(udplink VERSION 0.1.2 LANGUAGES CXX)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -12,6 +12,7 @@ option(COVERAGE "Enable coverage flags (GCC/Clang)" OFF)
 add_library(rudp STATIC
     src/rudp.cpp
     src/manager.cpp
+    src/rudp_c.cpp
 )
 
 add_library(rudp::rudp ALIAS rudp)
@@ -22,6 +23,7 @@ target_include_directories(rudp PUBLIC
 )
 
 target_compile_features(rudp PUBLIC cxx_std_11)
+target_compile_definitions(rudp PRIVATE RUDP_VERSION_STRING="${PROJECT_VERSION}")
 target_compile_options(rudp PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:/W4>
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic>
@@ -42,14 +44,27 @@ set_target_properties(rudp PROPERTIES
 )
 
 if(RUDP_BUILD_TESTS)
+    enable_testing()
+
     add_executable(rudp_self_test tests/self_test.cpp)
     target_link_libraries(rudp_self_test PRIVATE rudp)
+    add_test(NAME rudp_self_test COMMAND rudp_self_test)
+
     add_executable(rudp_reliability_test tests/reliability_test.cpp)
     target_link_libraries(rudp_reliability_test PRIVATE rudp)
+    add_test(NAME rudp_reliability_test COMMAND rudp_reliability_test)
+
     add_executable(rudp_bench tests/bench.cpp)
     target_link_libraries(rudp_bench PRIVATE rudp)
+    add_test(NAME rudp_bench COMMAND rudp_bench)
+
     add_executable(rudp_manager_test tests/manager_test.cpp)
     target_link_libraries(rudp_manager_test PRIVATE rudp)
+    add_test(NAME rudp_manager_test COMMAND rudp_manager_test)
+
+    add_executable(rudp_c_api_test tests/c_api_test.cpp)
+    target_link_libraries(rudp_c_api_test PRIVATE rudp)
+    add_test(NAME rudp_c_api_test COMMAND rudp_c_api_test)
 endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
@@ -73,9 +88,12 @@ if(RUDP_BUILD_EXAMPLES)
     target_link_libraries(rudp_example_endpoint PRIVATE rudp)
     add_executable(rudp_example_manager examples/basic_manager.cpp)
     target_link_libraries(rudp_example_manager PRIVATE rudp)
+    add_executable(rudp_example_udp_peer examples/socket_peer.cpp)
+    target_link_libraries(rudp_example_udp_peer PRIVATE rudp)
     if(WIN32)
         add_executable(rudp_example_winsock examples/socket_winsock.cpp)
         target_link_libraries(rudp_example_winsock PRIVATE rudp ws2_32)
+        target_link_libraries(rudp_example_udp_peer PRIVATE ws2_32)
     else()
         add_executable(rudp_example_posix examples/socket_posix.cpp)
         target_link_libraries(rudp_example_posix PRIVATE rudp)
@@ -93,7 +111,7 @@ if(RUDP_INSTALL)
 
     install(DIRECTORY include/rudp
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        FILES_MATCHING PATTERN "*.hpp"
+        FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h"
     )
 
     write_basic_package_version_file(

@@ -4,6 +4,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifndef RUDP_MAX_FRAME
+#define RUDP_MAX_FRAME 512
+#endif
+
+#ifndef RUDP_MAX_QUEUE
+#define RUDP_MAX_QUEUE 64
+#endif
+
 namespace rudp {
 
 enum class SendStatus : uint8_t {
@@ -96,8 +104,8 @@ struct Hooks {
 
 class Endpoint {
 public:
-    static const uint16_t kMaxFrame = 512;
-    static const uint16_t kMaxQueue = 64;
+    static const uint16_t kMaxFrame = static_cast<uint16_t>(RUDP_MAX_FRAME);
+    static const uint16_t kMaxQueue = static_cast<uint16_t>(RUDP_MAX_QUEUE);
     static const uint16_t kAckBitmapBytes = 4;
 
     Endpoint();

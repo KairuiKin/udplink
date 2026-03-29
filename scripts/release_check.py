@@ -5,46 +5,43 @@ This script performs the same core checks that the project now expects before
 cutting a release:
 
 1. Sync docs snippets.
-2. Configure/build the main project in Release mode.
-3. Run self/reliability/manager/bench executables.
-4. Build and install the package.
-5. Configure/build/run the standalone install consumer.
+2. Check C ABI doc-state consistency.
+3. Configure/build the main project in Release mode.
+4. Run self/reliability/manager/C ABI/bench executables.
+5. Build and install the package.
+6. Configure/build/run the standalone install consumers and maintained C API consumer example.
 """
 
 from __future__ import annotations
 
-import os
-import pathlib
-import shutil
+import platform
 import subprocess
-import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+BUILD = ROOT / "build"
+BUILD_INSTALL = ROOT / "build-install"
+BUILD_CONSUME = ROOT / "build-consume"
+BUILD_CONSUME_C = ROOT / "build-consume-c"
+BUILD_EXAMPLE_C = ROOT / "build-example-c-api"
+STAGE = ROOT / "stage"
+RUDP_DIR = STAGE / "lib" / "cmake" / "rudp"
 
 
-ROOT = pathlib.Path(__file__).resolve().parents[1]
-WORK = ROOT / ".release-check"
-BUILD = WORK / "build"
-BUILD_INSTALL = WORK / "build-install"
-STAGE = WORK / "stage"
-BUILD_CONSUME = WORK / "build-consume"
-
-
-def run(cmd: list[str], cwd: pathlib.Path | None = None) -> None:
+def run(cmd: list[str]) -> None:
     print("+", " ".join(cmd))
-    subprocess.run(cmd, cwd=str(cwd or ROOT), check=True)
+    subprocess.run(cmd, check=True, cwd=ROOT)
 
 
-def exe_path(build_dir: pathlib.Path, name: str) -> pathlib.Path:
-    if os.name == "nt":
+def exe_path(build_dir: Path, name: str) -> Path:
+    if platform.system() == "Windows":
         return build_dir / "Release" / f"{name}.exe"
     return build_dir / name
 
 
 def main() -> int:
-    if WORK.exists():
-        shutil.rmtree(WORK)
-    WORK.mkdir(parents=True)
-
-    run([sys.executable, "scripts/sync_docs_snippets.py"])
+    run(["python", "scripts/sync_docs_snippets.py"])
+    run(["python", "scripts/check_c_abi_docs.py", "--mode", "wait"])
 
     run([
         "cmake",
@@ -53,16 +50,15 @@ def main() -> int:
         "-B",
         str(BUILD),
         "-DRUDP_BUILD_TESTS=ON",
+        "-DRUDP_BUILD_EXAMPLES=ON",
     ])
     run(["cmake", "--build", str(BUILD), "--config", "Release"])
 
-    for exe in [
-        "rudp_self_test",
-        "rudp_reliability_test",
-        "rudp_manager_test",
-        "rudp_bench",
-    ]:
-        run([str(exe_path(BUILD, exe))])
+    run([str(exe_path(BUILD, "rudp_self_test"))])
+    run([str(exe_path(BUILD, "rudp_reliability_test"))])
+    run([str(exe_path(BUILD, "rudp_manager_test"))])
+    run([str(exe_path(BUILD, "rudp_c_api_test"))])
+    run([str(exe_path(BUILD, "rudp_bench"))])
 
     run([
         "cmake",
@@ -91,10 +87,32 @@ def main() -> int:
         "tests/install_consume",
         "-B",
         str(BUILD_CONSUME),
-        f"-DCMAKE_PREFIX_PATH={STAGE}",
+        f"-Drudp_DIR:PATH={RUDP_DIR}",
     ])
     run(["cmake", "--build", str(BUILD_CONSUME), "--config", "Release"])
     run([str(exe_path(BUILD_CONSUME, "rudp_install_consume"))])
+
+    run([
+        "cmake",
+        "-S",
+        "tests/install_consume_c",
+        "-B",
+        str(BUILD_CONSUME_C),
+        f"-Drudp_DIR:PATH={RUDP_DIR}",
+    ])
+    run(["cmake", "--build", str(BUILD_CONSUME_C), "--config", "Release"])
+    run([str(exe_path(BUILD_CONSUME_C, "rudp_install_consume_c"))])
+
+    run([
+        "cmake",
+        "-S",
+        "examples/c_api/install_consume",
+        "-B",
+        str(BUILD_EXAMPLE_C),
+        f"-Drudp_DIR:PATH={RUDP_DIR}",
+    ])
+    run(["cmake", "--build", str(BUILD_EXAMPLE_C), "--config", "Release"])
+    run([str(exe_path(BUILD_EXAMPLE_C, "rudp_c_api_example"))])
 
     print("release_check passed")
     return 0

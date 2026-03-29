@@ -33,9 +33,11 @@ public:
     ConnectionManager();
 
     bool Init(const Config& endpoint_cfg, const ManagerHooks& hooks);
-    // Legacy helper. In concurrent use, prefer manager-level query APIs below.
+    // Legacy escape hatch for direct Endpoint access. New code should prefer
+    // manager-level send/query APIs below, especially in concurrent use.
     Endpoint* Open(uint64_t key, bool start_connect);
-    // Legacy helper. The returned pointer is not stable across concurrent Remove/Open.
+    // Legacy compatibility helper. Avoid retaining the returned Endpoint*
+    // across concurrent Open/Remove/Tick on the same manager.
     Endpoint* Find(uint64_t key);
     void Remove(uint64_t key);
     void OnUdpPacket(uint64_t key, const uint8_t* data, uint16_t len);

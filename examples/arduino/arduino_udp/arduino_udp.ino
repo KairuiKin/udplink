@@ -93,6 +93,7 @@ static bool InitNetworking() {
     }
 
     rudp::Config cfg = rudp::ConfigForProfile(rudp::ConfigProfile::kLowPower);
+    cfg.mtu = 128;
     cfg.max_payload = 96;
     cfg.enable_auth = true;
     cfg.auth_key0 = 0x0123456789ABCDEFull;
@@ -132,7 +133,7 @@ void loop() {
 
     const int packet_size = g_udp.parsePacket();
     if (packet_size > 0) {
-        uint8_t rx_buf[256];
+        uint8_t rx_buf[rudp::Endpoint::kMaxFrame];
         const int len = g_udp.read(rx_buf, sizeof(rx_buf));
         if (len > 0) {
             g_endpoint.OnUdpPacket(rx_buf, static_cast<uint16_t>(len));
