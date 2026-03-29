@@ -11,13 +11,52 @@
 #include <stdint.h>
 #include <string.h>
 
+#ifdef RUDP_TEMPLATE_COMPILE_ONLY
+#if defined(_WIN32)
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+#endif
+
+typedef void* TaskHandle_t;
+
+static int64_t esp_timer_get_time() {
+    return 0;
+}
+
+static unsigned pdMS_TO_TICKS(unsigned ms) {
+    return ms;
+}
+
+static void vTaskDelay(unsigned) {}
+
+static int xTaskCreate(void (*)(void*), const char*, unsigned, void*, unsigned, TaskHandle_t*) {
+    return 0;
+}
+
+#define ESP_LOGI(tag, fmt, ...) do { (void)(tag); } while (0)
+#define ESP_LOGE(tag, fmt, ...) do { (void)(tag); } while (0)
+#else
 #include <esp_log.h>
 #include <esp_timer.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <lwip/sockets.h>
+#endif
 
 namespace {
+
+#if defined(RUDP_TEMPLATE_COMPILE_ONLY) && defined(_WIN32)
+typedef SOCKET UdpSocketHandle;
+static const UdpSocketHandle kInvalidUdpSocket = INVALID_SOCKET;
+#else
+typedef int UdpSocketHandle;
+static const UdpSocketHandle kInvalidUdpSocket = -1;
+#endif
 
 static const char* kTag = "udplink_esp32";
 static const char* kPeerIp = "192.168.1.100";
@@ -25,7 +64,7 @@ static const uint16_t kLocalPort = 8888;
 static const uint16_t kPeerPort = 8889;
 
 static rudp::Endpoint g_endpoint;
-static int g_udp_sock = -1;
+static UdpSocketHandle g_udp_sock = kInvalidUdpSocket;
 static sockaddr_in g_peer_addr;
 
 static uint32_t NowMs(void*) {
@@ -81,7 +120,7 @@ static void ReceiveTask(void*) {
 
 extern "C" void app_main() {
     g_udp_sock = socket(AF_INET, SOCK_DGRAM, 0);
-    if (g_udp_sock < 0) {
+    if (g_udp_sock == kInvalidUdpSocket) {
         ESP_LOGE(kTag, "failed to create UDP socket");
         return;
     }
