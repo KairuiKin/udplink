@@ -72,6 +72,9 @@ jobs:
       - name: Check C ABI docs consistency
         run: python scripts/check_c_abi_docs.py --mode wait
 
+      - name: Check C ABI surface baseline
+        run: python scripts/check_c_abi_surface.py
+
   # Code quality
   lint:
     runs-on: ubuntu-latest

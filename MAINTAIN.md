@@ -77,6 +77,7 @@ If maintainers want to change that answer, use:
 - `docs/c-abi-downstream-baseline-decision.md`
 - `docs/c-abi-stability-decision-playbook.md`
 - `scripts/check_c_abi_docs.py`
+- `scripts/check_c_abi_surface.py`
 
 ## Validation entry points maintainers should prefer
 
@@ -85,6 +86,7 @@ If maintainers want to change that answer, use:
 - `ctest --test-dir build -C Release --output-on-failure` on Windows
 - `ctest --test-dir build --output-on-failure` on Unix-like systems
 - `python scripts/release_check.py` for a release-style local pass
+- `python scripts/check_c_abi_surface.py` when touching `include/rudp/rudp_c.h`
 
 ### Install/export validation
 

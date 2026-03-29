@@ -18,10 +18,13 @@ Current repository baseline:
 - wrapper implementation: `src/rudp_c.cpp`
 - smoke validation: `tests/c_api_test.cpp`
 - installed-package C consumer: `tests/install_consume_c/`
+- checked-in v1 surface snapshot: `docs/c-abi-surface-v1.json`
 
 ## Compatibility Scope
 
 For the current line, the project aims to preserve source and binary compatibility for the exported C symbols that already exist in `rudp_c.h`, unless a future release explicitly documents a breaking ABI revision.
+
+The repository now keeps a checked-in snapshot of that public surface in `docs/c-abi-surface-v1.json`, and `python scripts/check_c_abi_surface.py` fails if `include/rudp/rudp_c.h` drifts away from that baseline without an intentional snapshot update.
 
 That means maintainers should treat these items as compatibility-sensitive:
 
@@ -83,9 +86,10 @@ Changing this rule later would be a semantic compatibility event and must not ha
 
 Any release that touches `rudp_c.h`, `src/rudp_c.cpp`, install rules, or C ABI docs should pass at least:
 
-1. `rudp_c_api_test`
-2. installed-package C consumer build/run from `tests/install_consume_c/`
-3. full `scripts/release_check.py`
+1. `python scripts/check_c_abi_surface.py`
+2. `rudp_c_api_test`
+3. installed-package C consumer build/run from `tests/install_consume_c/`
+4. full `scripts/release_check.py`
 
 If those checks are not run, the release should not claim ABI-sensitive changes are verified.
 

@@ -5,6 +5,7 @@ Use this checklist before cutting the next tag.
 ## Validation
 
 - `python scripts/release_check.py` passes locally.
+- `python scripts/check_c_abi_surface.py` passes and matches `include/rudp/rudp_c.h` to `docs/c-abi-surface-v1.json`.
 - Build succeeds with `cmake -S . -B build` and `cmake --build build --config Release`.
 - `ctest --test-dir build --output-on-failure` passes on Unix-like systems when applicable.
 - `ctest --test-dir build -C Release --output-on-failure` passes on Windows.
@@ -28,7 +29,7 @@ Use this checklist before cutting the next tag.
 - `CHANGELOG.md` reflects shipped changes.
 - `README.md`, `README.en.md`, `CONTRIBUTING.md`, and `MAINTAIN.md` match the current API and validation layout.
 - `docs/index.html` matches the current validation entry points and repository status.
-- `docs/c-api-quickstart.md`, `docs/c-abi-draft.md`, `docs/c-abi-compatibility.md`, `docs/c-abi-stability-gate.md`, `docs/c-abi-stability-assessment.md`, `docs/c-abi-stability-decision-playbook.md`, and `docs/c-abi-downstream-baseline-decision.md` match the shipped C ABI surface and current stability position.
+- `docs/c-api-quickstart.md`, `docs/c-abi-draft.md`, `docs/c-abi-compatibility.md`, `docs/c-abi-stability-gate.md`, `docs/c-abi-stability-assessment.md`, `docs/c-abi-stability-decision-playbook.md`, `docs/c-abi-downstream-baseline-decision.md`, and `docs/c-abi-surface-v1.json` match the shipped C ABI surface and current stability position.
 - `python scripts/check_c_abi_docs.py --mode wait` passes and confirms that the current wait-state wording is aligned across the key C ABI docs, with no stable-only wording mixed into those pages.
 - Embedded examples are still clearly marked as reference templates when not CI-built.
 

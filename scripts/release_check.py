@@ -5,7 +5,7 @@ This script performs the same core checks that the project now expects before
 cutting a release:
 
 1. Sync docs snippets.
-2. Check C ABI doc-state consistency.
+2. Check C ABI doc-state consistency and the v1 public surface baseline.
 3. Configure/build the main project in Release mode.
 4. Run self/reliability/manager/C ABI/bench executables.
 5. Build and install the package.
@@ -42,6 +42,7 @@ def exe_path(build_dir: Path, name: str) -> Path:
 def main() -> int:
     run(["python", "scripts/sync_docs_snippets.py"])
     run(["python", "scripts/check_c_abi_docs.py", "--mode", "wait"])
+    run(["python", "scripts/check_c_abi_surface.py"])
 
     run([
         "cmake",
