@@ -25,6 +25,10 @@ If you want the visual project landing page instead, open [Landing Page](index.h
 - [C ABI Decision Playbook](c-abi-stability-decision-playbook.md)
 - [C ABI Stable Candidate](c-abi-stable-candidate-change-set.md)
 
+## Articles
+
+- [Why Your MCU Link Probably Should Not Default to TCP](blog/mcu-udp-vs-tcp.md): a Chinese long-form article on why a reliable UDP layer may fit embedded constraints better than a default TCP-first design.
+
 ## Maintainer Routes
 
 - [Arduino Mega Maintainer Run](arduino-mega-w5100-maintainer-run.md)
