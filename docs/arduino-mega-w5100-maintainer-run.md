@@ -60,6 +60,7 @@ On Windows, `prepare_mega_w5100_run.ps1` also writes:
 - `build-board.ps1`
 - `upload-board.ps1`
 - `monitor-board.ps1`
+- `render-report.ps1`
 
 Fallback manual directory creation is still fine if you do not want to use the helper.
 
@@ -146,10 +147,22 @@ Use this rule:
 
 ## Step 6: File Or Prepare The Report
 
+If you used the Windows fast path, you can render the current run directory into an issue-shaped markdown file with:
+
+```powershell
+.\logs\board-runs\<run-id>\render-report.ps1
+```
+
+Equivalent raw command:
+
+```powershell
+python scripts/render_board_run_report.py --run-id <run-id>
+```
+
 Use one of these:
 
 - preferred: open a GitHub issue with `.github/ISSUE_TEMPLATE/board-bringup-report.md`
-- fallback: fill a local draft using `docs/board-bringup-report-example.md` as the shape reference
+- fallback: start from the generated `board-bringup-report.md` or fill a local draft using `docs/board-bringup-report-example.md` as the shape reference
 
 When filing the report, attach or paste:
 

@@ -73,7 +73,10 @@ jobs:
           if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\build-board.ps1)) { throw 'missing build-board.ps1' }
           if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\upload-board.ps1)) { throw 'missing upload-board.ps1' }
           if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\monitor-board.ps1)) { throw 'missing monitor-board.ps1' }
+          if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\render-report.ps1)) { throw 'missing render-report.ps1' }
           if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\run-summary.txt)) { throw 'missing run-summary.txt' }
+          powershell -ExecutionPolicy Bypass -File .\logs\board-runs\ci-prepare-smoke\render-report.ps1
+          if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\board-bringup-report.md)) { throw 'missing board-bringup-report.md' }
 
   docs-consistency:
     runs-on: ubuntu-latest

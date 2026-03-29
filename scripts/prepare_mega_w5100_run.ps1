@@ -66,6 +66,7 @@ try {
     $boardBuildScript = Join-Path $runDir 'build-board.ps1'
     $boardUploadScript = Join-Path $runDir 'upload-board.ps1'
     $boardMonitorScript = Join-Path $runDir 'monitor-board.ps1'
+    $renderReportScript = Join-Path $runDir 'render-report.ps1'
 
     Write-HelperScript -Path $hostPeerScript -BodyLines @(
         ('Set-Location ' + (Quote-PowerShell $repoRoot)),
@@ -83,6 +84,10 @@ try {
         ('Set-Location ' + (Quote-PowerShell $exampleDir)),
         $pioMonitorCmd
     )
+    Write-HelperScript -Path $renderReportScript -BodyLines @(
+        ('Set-Location ' + (Quote-PowerShell $repoRoot)),
+        ('python scripts/render_board_run_report.py --run-id ' + (Quote-PowerShell $RunId))
+    )
 
     $summaryPath = Join-Path $runDir 'run-summary.txt'
     if (Test-Path $summaryPath) {
@@ -93,7 +98,7 @@ try {
         $summary = $summary.Replace('Host IP / port:', "Host IP / port: $HostIp / $HostPort")
         $summary = $summary.Replace(
             'Notes:',
-            "Host peer helper script: $hostPeerScript`r`nBoard build helper script: $boardBuildScript`r`nBoard upload helper script: $boardUploadScript`r`nBoard monitor helper script: $boardMonitorScript`r`nNotes:"
+            "Host peer helper script: $hostPeerScript`r`nBoard build helper script: $boardBuildScript`r`nBoard upload helper script: $boardUploadScript`r`nBoard monitor helper script: $boardMonitorScript`r`nReport render helper script: $renderReportScript`r`nNotes:"
         )
         Set-Content $summaryPath $summary -Encoding utf8
     }
@@ -108,6 +113,7 @@ try {
     Write-Host "- $boardBuildScript"
     Write-Host "- $boardUploadScript"
     Write-Host "- $boardMonitorScript"
+    Write-Host "- $renderReportScript"
     Write-Host ''
     if ($serialPorts.Count -gt 0) {
         Write-Host 'Detected serial ports:'
@@ -131,6 +137,7 @@ try {
     Write-Host '1. Run start-host-peer.ps1 from the generated run directory in one PowerShell window.'
     Write-Host '2. Run build-board.ps1 and upload-board.ps1 in another PowerShell window.'
     Write-Host '3. Run monitor-board.ps1 and paste key serial lines into the run directory notes.'
+    Write-Host '4. Run render-report.ps1 after updating the notes to produce board-bringup-report.md.'
 }
 finally {
     Pop-Location
