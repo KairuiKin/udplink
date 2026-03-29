@@ -32,7 +32,7 @@
 - STM32 示例
 - ESP32 示例
 - Arduino 封装
-- PlatformIO 支持
+- PlatformIO 支持（先做 Arduino 最小路径）
 
 ### 4. 推广 (20%)
 

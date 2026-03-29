@@ -6,15 +6,22 @@ All notable changes to this project should be documented in this file.
 
 ### Added
 
-- N/A
+- Minimal C ABI surface via `include/rudp/rudp_c.h` and `src/rudp_c.cpp`.
+- `tests/c_api_test.cpp` smoke coverage for C ABI lifecycle, send, query, and failure-path checks.
+- `tests/install_consume_c` installed-package consumer smoke for the public C header.
+- Docs pages for C API quickstart, C ABI draft, and C ABI compatibility policy.
+- Arduino-first PlatformIO local skeleton under `examples/arduino/arduino_udp/`.
 
 ### Changed
 
-- N/A
+- `scripts/release_check.py` now validates both C++ and C install-consume paths.
+- CI now runs `rudp_c_api_test` and installed-package C consumer validation.
+- README and docs navigation now expose C API and ABI policy entry points directly.
+- Project version metadata now matches released `0.1.2` artifacts.
 
 ### Fixed
 
-- N/A
+- C ABI release/readiness checks are now included in the release checklist instead of being implicit.
 
 ## 0.1.2 - 2026-03-28
 
@@ -57,4 +64,3 @@ All notable changes to this project should be documented in this file.
 - Manager test and manager example no longer rely on large stack allocation for manager instances.
 - Receive path now validates replay window before ACK handling.
 - Documentation updated to reflect current APIs and remove stale links.
-

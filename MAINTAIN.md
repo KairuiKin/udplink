@@ -1,44 +1,140 @@
-# udplink 维护计划
+﻿# Maintain Notes
 
-## 当前状态
+This file records the repository's current maintainer-facing operating state.
+It is intentionally shorter than the full docs tree and should answer three questions quickly:
 
-- 已发布 `v0.1.1`，核心库、安装导出、CI 主线可用。
-- 核心验证已分层：`self_test` 负责 smoke，`reliability_test` 负责确定性丢包/乱序回归。
-- 嵌入式示例已切换到当前 `rudp::Hooks` API，但仍作为参考模板维护。
-- `v0.1.2` 发布材料与本地 release check 已准备完成，当前处于可切版状态。
+1. What is shipped today?
+2. What is verified today?
+3. What should maintainers push next?
 
-## 近期优先级
+## Current shipped scope
 
-### P0
+- C++ protocol core: shipped
+- connection manager layer: shipped
+- minimal C ABI: shipped
+- install/export metadata: shipped
+- maintained C installed-package example: shipped
+- narrow PlatformIO/Arduino local path: shipped as a reference path, not as a broad support promise
+- Rust bindings: deferred
 
-- [x] 清理 `src/manager.cpp` / `src/rudp.cpp` 中对象级 `memset` 与初始化顺序告警
-- [x] 在 CI 中补充一个安装/消费验证 job
-- [ ] 把嵌入式示例的最小适配步骤拆成更具体的板级说明
+## Current verification status
+
+### Windows
+
+Verified locally in this repository:
+
+- main `Release` build
+- `ctest --test-dir build -C Release --output-on-failure`
+- `tests/install_consume`
+- `tests/install_consume_c`
+- `examples/c_api/install_consume`
+- host-side `rudp_example_udp_peer`
+- `scripts/prepare_mega_w5100_run.ps1`
+
+Windows is currently the strongest end-to-end validation path in the repository.
+
+### Unix-like CI
+
+Covered in CI:
+
+- core build on Ubuntu/macOS
+- smoke/reliability/manager/C ABI tests
+- install-consume checks on Linux
+- embedded template compile target
+
+### Board-backed validation
+
+Status today:
+
+- documented
+- locally buildable
+- operator workflow prepared
+- not yet confirmed with real hardware evidence in this repository
+
+The first narrow board-backed route remains:
+
+- Arduino Mega 2560
+- W5100-compatible shield
+- PlatformIO
+- `rudp_example_udp_peer`
+
+## C ABI position
+
+Current repository position: `wait`
+
+That means all of the following remain true:
+
+- the C ABI is implemented
+- the C ABI is exercised by tests and installed-package consumers
+- the C ABI is not yet declared long-term stable
+- maintainers have not yet blessed `examples/c_api/install_consume/` as the first supported downstream baseline
+
+Do not silently drift docs or release wording away from that state.
+If maintainers want to change that answer, use:
+
+- `docs/c-abi-stability-gate.md`
+- `docs/c-abi-stability-assessment.md`
+- `docs/c-abi-downstream-baseline-decision.md`
+- `docs/c-abi-stability-decision-playbook.md`
+- `scripts/check_c_abi_docs.py`
+
+## Validation entry points maintainers should prefer
+
+### Core validation
+
+- `ctest --test-dir build -C Release --output-on-failure` on Windows
+- `ctest --test-dir build --output-on-failure` on Unix-like systems
+- `python scripts/release_check.py` for a release-style local pass
+
+### Install/export validation
+
+Preferred rule:
+
+- Unix-like consumers may use `CMAKE_PREFIX_PATH`
+- Windows consumers should prefer explicit `rudp_DIR:PATH=<stage>\lib\cmake\rudp`
+
+This is now the documented and CI-aligned Windows path.
+
+### Board-run preparation
+
+Use:
+
+- `scripts/prepare_mega_w5100_run.ps1` on Windows for the fast-path run pack
+- `scripts/init_board_run.py` if only the run directory templates are needed
+- `scripts/run_peer_capture.py` to tee host peer output to a log
+
+## Current priorities
 
 ### P1
 
-- [ ] 完善静态文档站内容与导航
-- [x] 发布一份基准测试方法与样例数据
-- [x] 为示例补充“当前 API 对照表”
+- keep Windows build/test/install-consume docs, scripts, and CI aligned
+- reduce duplicate or contradictory wording across README, docs index, contributing guide, and release checklist
+- preserve the current C ABI `wait` wording until maintainers intentionally change it
 
 ### P2
 
-- [ ] 评估 Rust 绑定的边界与维护成本
-- [ ] 评估是否需要 PlatformIO 集成样例
+- get one real board-backed Arduino Mega 2560 + W5100 evidence run into the repository workflow
+- keep PlatformIO narrow; do not expand into a broad support matrix without real demand and validation
+- extend the C ABI only when there is a concrete downstream need
 
-## 发布节奏
+### P3
 
-### `v0.1.2`
+- revisit Rust only after the C ABI stability decision is intentionally closed
+- revisit true deprecation strategy for `ConnectionManager::Find()` only in a deliberate breaking-change window
 
-- 示例与文档收口
-- reliability 回归测试落地
-- 编译告警治理
-- 打包/消费验证自动化
+## What maintainers should avoid
 
-建议动作：完成最终 diff 检查后开 release PR。
+- do not claim the current C ABI is stable unless the stability gate and wording pack are intentionally updated together
+- do not treat the Arduino/PlatformIO path as proof of broad embedded support
+- do not let Windows instructions drift back to hard-coded Visual Studio generator assumptions
+- do not add new consumer-facing surface area without matching tests and installed-package validation
 
-### `v0.2.0`
+## Practical next route
 
-- 文档站完善
-- 示例矩阵增强
-- 性能数据与生态接入
+If the goal is repository hardening rather than new feature spread, the next highest-value sequence is:
+
+1. keep Windows validation green
+2. keep install-consume paths green
+3. reduce doc drift and duplication
+4. obtain one real board-backed evidence run
+5. only then decide whether the C ABI should stay `wait` or move to `stable`
