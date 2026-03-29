@@ -15,7 +15,7 @@ Current recommendation: do not bless it yet.
 
 Reason:
 
-- the example is now maintained and validated through CI and `scripts/release_check.py`
+- the example is now maintained and validated through CI, `scripts/release_check.py`, and the checked-in v1 ABI surface snapshot
 - but maintainers still have not explicitly accepted the support promise that comes with treating it as the downstream baseline
 - stability declarations should follow that promise, not imply it accidentally
 
@@ -60,7 +60,7 @@ Recommendation today: choose Option B for now.
 Why:
 
 - technical validation is already strong enough to support the example as evidence
-- the remaining gap is governance, not implementation wiring
+- the remaining gap is governance, not implementation wiring or ABI drift detection
 - there is still no explicit maintainer statement that this example now carries compatibility weight comparable to a supported downstream baseline
 - there is still no explicit release-facing no-break confirmation for the current v1 C ABI
 

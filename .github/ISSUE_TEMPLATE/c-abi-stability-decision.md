@@ -21,6 +21,7 @@ Choose one:
 - [ ] `docs/c-abi-stability-decision-playbook.md`
 - [ ] `docs/c-abi-stable-candidate-change-set.md`
 - [ ] `docs/c-abi-stable-wording-pack.md`
+- [ ] `docs/c-abi-surface-v1.json`
 
 ## Downstream Baseline Decision
 
@@ -33,6 +34,7 @@ State whether maintainers explicitly expect no near-term breaking redesign for t
 ## Validation Status
 
 - `python scripts/check_c_abi_docs.py --mode wait|stable`:
+- `python scripts/check_c_abi_surface.py`:
 - `python scripts/release_check.py`:
 - `rudp_c_api_test`:
 - `tests/install_consume_c/`:
@@ -44,12 +46,14 @@ If the decision is `wait`:
 
 - [ ] official docs remain in wait state
 - [ ] `python scripts/check_c_abi_docs.py --mode wait` passes
+- [ ] `python scripts/check_c_abi_surface.py` passes
 - [ ] no stable-only wording is merged into official docs
 
 If the decision is `stable`:
 
 - [ ] official docs are updated in one change set
 - [ ] `python scripts/check_c_abi_docs.py --mode stable` passes
+- [ ] `python scripts/check_c_abi_surface.py` passes
 - [ ] no wait-only wording remains in official stable docs
 - [ ] release notes and changelog include the stable declaration intentionally
 

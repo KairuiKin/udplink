@@ -10,6 +10,8 @@ Use it together with:
 - `docs/c-abi-stability-assessment.md`
 - `docs/c-abi-downstream-baseline-decision.md`
 - `docs/release-checklist.md`
+- `docs/c-abi-surface-v1.json`
+- `scripts/check_c_abi_surface.py`
 - `docs/c-abi-stable-candidate-change-set.md`
 
 ## Purpose
@@ -37,7 +39,7 @@ Current recommended answer: keep `wait`.
 
 Reason:
 
-- the technical validation path is now strong enough
+- the technical validation path is now strong enough, including a checked-in v1 surface snapshot
 - the remaining gap is an explicit support promise and no-break statement
 - those promises should be made intentionally, not inferred from tests alone
 
@@ -60,6 +62,7 @@ Use language equivalent to all of the following together:
 If maintainers keep `wait`, make sure all of the following remain true:
 
 - `python scripts/check_c_abi_docs.py --mode wait` still passes
+- `python scripts/check_c_abi_surface.py` still passes
 - no stable-only wording has leaked into the official wait-state docs
 - `docs/c-abi-stability-assessment.md` still says `not yet`
 - `docs/c-abi-downstream-baseline-decision.md` stays `proposed, not yet adopted`
@@ -71,7 +74,7 @@ If maintainers keep `wait`, make sure all of the following remain true:
 
 Use wording close to this if a release wants to mention the C ABI without declaring stability:
 
-> The repository ships a minimal public C ABI with CI-backed validation and installed-package consumption, but it is not yet declared a long-term stable baseline.
+> The repository ships a minimal public C ABI with CI-backed validation, a checked-in v1 surface snapshot, and installed-package consumption, but it is not yet declared a long-term stable baseline.
 
 ## Path B: Declare Stable
 
@@ -85,6 +88,7 @@ Choose this path only if maintainers are ready to do both of the following inten
 Do not proceed unless all of the following are true together:
 
 - every item in `docs/c-abi-stability-gate.md` is satisfied
+- `python scripts/check_c_abi_surface.py` passes on the release candidate
 - `rudp_c_api_test` passes on the release candidate
 - `tests/install_consume_c/` passes on the release candidate
 - `examples/c_api/install_consume/` passes on the release candidate
