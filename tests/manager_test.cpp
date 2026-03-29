@@ -135,6 +135,15 @@ int main() {
     CHECK_OR_RET(a_mgr.IsConnected(2), 21);
     CHECK_OR_RET(b_mgr.IsConnected(1), 22);
     CHECK_OR_RET(b_mgr.IsConnected(2), 23);
+    CHECK_OR_RET(a_mgr.GetConnectionState(1) == rudp::ConnectionState::kConnected, 24);
+    CHECK_OR_RET(a_mgr.GetConnectionState(2) == rudp::ConnectionState::kConnected, 25);
+
+    rudp::Stats a_stats1;
+    rudp::RuntimeMetrics a_metrics1;
+    CHECK_OR_RET(a_mgr.GetStats(1, &a_stats1), 26);
+    CHECK_OR_RET(a_mgr.GetRuntimeMetrics(1, &a_metrics1), 27);
+    CHECK_OR_RET(a_stats1.connect_success > 0, 28);
+    CHECK_OR_RET(a_metrics1.rto_ms >= cfg.retransmit_min_ms, 29);
 
     const char* m1 = "multi-conn-1";
     const char* m2 = "multi-conn-2";
@@ -174,8 +183,21 @@ int main() {
         }
     }
     CHECK_OR_RET(got1 && got2, 40);
-    CHECK_OR_RET(a_mgr.GetActiveCount() >= 2, 41);
-    CHECK_OR_RET(!a_node.reentered_critical && !b_node.reentered_critical, 42);
+
+    rudp::Stats b_stats1;
+    rudp::RuntimeMetrics b_metrics1;
+    CHECK_OR_RET(b_mgr.GetStats(1, &b_stats1), 41);
+    CHECK_OR_RET(b_mgr.GetRuntimeMetrics(1, &b_metrics1), 42);
+    CHECK_OR_RET(b_stats1.rx_delivered > 0, 43);
+    CHECK_OR_RET(b_metrics1.rto_ms >= cfg.retransmit_min_ms, 44);
+
+    a_mgr.Remove(2);
+    CHECK_OR_RET(!a_mgr.IsConnected(2), 45);
+    CHECK_OR_RET(a_mgr.GetConnectionState(2) == rudp::ConnectionState::kDisconnected, 46);
+    CHECK_OR_RET(!a_mgr.GetStats(2, &a_stats1), 47);
+    CHECK_OR_RET(!a_mgr.GetRuntimeMetrics(2, &a_metrics1), 48);
+    CHECK_OR_RET(a_mgr.GetActiveCount() == 1, 49);
+    CHECK_OR_RET(!a_node.reentered_critical && !b_node.reentered_critical, 50);
 
     puts("rudp manager test passed");
     return 0;

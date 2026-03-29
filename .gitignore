@@ -38,6 +38,12 @@ build-consume/
 .release-check/
 stage/
 install-out-verify/
+build-consume-c/
+build-example-c-api/
+build-embedded/
+out/
+logs/board-runs/
+logs/*.txt
 CMakeFiles/
 CMakeCache.txt
 *.cmake
