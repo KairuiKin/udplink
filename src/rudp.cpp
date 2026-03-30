@@ -211,6 +211,7 @@ Endpoint::Endpoint()
       has_peer_session_id_(false),
       conn_state_(ConnectionState::kDisconnected),
       ack_dirty_(false),
+      pending_send_count_(0),
       send_slots_(),
       recv_slots_(),
       stats_() {}
@@ -233,6 +234,7 @@ void Endpoint::ResetState() {
     dup_ack_count_ = 0;
     pacing_budget_bytes_ = 0;
     connect_retries_ = 0;
+    pending_send_count_ = 0;
     for (uint16_t i = 0; i < kMaxQueue; ++i) {
         send_slots_[i] = PacketSlot();
         recv_slots_[i] = RecvSlot();
@@ -513,24 +515,15 @@ bool Endpoint::SeqInWindow(uint16_t seq, uint16_t start, uint16_t window) const 
 }
 
 Endpoint::PacketSlot* Endpoint::AllocateSendSlot(uint16_t* inflight_count) {
-    PacketSlot* free_slot = 0;
-    uint16_t inflight = 0;
-    for (uint16_t i = 0; i < kMaxQueue; ++i) {
-        PacketSlot* slot = &send_slots_[i];
-        if (slot->used) {
-            if (!slot->acked) {
-                ++inflight;
-            }
-            continue;
-        }
-        if (!free_slot) {
-            free_slot = slot;
-        }
-    }
     if (inflight_count) {
         *inflight_count = pending_send_count_;
     }
-    return free_slot;
+    for (uint16_t i = 0; i < kMaxQueue; ++i) {
+        if (!send_slots_[i].used) {
+            return &send_slots_[i];
+        }
+    }
+    return 0;
 }
 
 Endpoint::RecvSlot* Endpoint::AllocateRecvSlot() {
@@ -778,10 +771,9 @@ bool Endpoint::SendFrame(PacketSlot* slot, uint32_t now_ms, bool is_retransmit) 
     if (!ok) {
         return false;
     }
-    PacketSlot* cur = FindSendSlotBySeq(seq);
-    if (cur && cur->used && !cur->acked) {
-        cur->last_sent_ms = now_ms;
-        cur->ever_sent = true;
+    if (slot->used && slot->seq == seq && !slot->acked) {
+        slot->last_sent_ms = now_ms;
+        slot->ever_sent = true;
     }
     last_tx_ms_ = now_ms;
     if (is_retransmit) {
@@ -1245,17 +1237,8 @@ void Endpoint::FlushAcks(uint32_t now_ms, bool force) {
     if (!force && (now_ms - last_ack_flush_ms_) < cfg_.ack_delay_ms) {
         return;
     }
-    if (!force) {
-        bool has_pending_data = false;
-        for (uint16_t i = 0; i < kMaxQueue; ++i) {
-            if (send_slots_[i].used && !send_slots_[i].acked) {
-                has_pending_data = true;
-                break;
-            }
-        }
-        if (has_pending_data && (now_ms - last_ack_flush_ms_) < (cfg_.ack_delay_ms * 2u)) {
-            return;
-        }
+    if (!force && pending_send_count_ > 0 && (now_ms - last_ack_flush_ms_) < (cfg_.ack_delay_ms * 2u)) {
+        return;
     }
 
     if (SendControl(kFlagAckOnly, now_ms, 0, 0)) {
