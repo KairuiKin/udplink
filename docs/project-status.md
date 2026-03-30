@@ -13,7 +13,7 @@ Current repository read:
 - C ABI validation now spans `tests/c_api_test.cpp`, `tests/install_consume_c/`, and the maintained example in `examples/c_api/install_consume/`.
 - Linux and Windows CI both exercise installed-package C++ and C consumers.
 - embedded examples are aligned with the current API, but most are still reference templates rather than proven board paths.
-- the first narrow board-backed route is drafted around Arduino Mega 2560 + W5100 + PlatformIO + `rudp_example_udp_peer`, with an execution checklist and evidence template in `docs/arduino-mega-w5100-bringup.md`.
+- the first narrow board-backed route is drafted around Arduino Mega 2560 + W5100 + PlatformIO + `rudp_example_udp_peer`, with an execution checklist, prepared run pack, finalize helper, and issue-filing helper in `docs/arduino-mega-w5100-bringup.md` and `docs/arduino-mega-w5100-maintainer-run.md`.
 - Rust work remains intentionally blocked until the ABI stability decision is finished.
 
 ## What Is Already Closed
@@ -23,7 +23,7 @@ The repository is no longer blocked on first-pass implementation work:
 - core C++ build/test paths work on Windows, Linux, and macOS
 - the minimal C ABI exists and is exercised by tests, installed-package consumers, and a maintained C example
 - install/export metadata, docs consistency checks, and C ABI surface snapshot checks already exist
-- the first narrow Arduino Mega 2560 + W5100 board path now has bring-up docs, a maintainer run pack, and evidence templates
+- the first narrow Arduino Mega 2560 + W5100 board path now has bring-up docs, a maintainer run pack, report finalization, issue-filing helpers, and CI-smoked evidence templates
 - release-style local verification already ties docs checks, build/test, install/export, and installed-package consumer checks together
 
 If you need build commands, installed-package usage, or API quick views, use `README.md` / `README.en.md`.

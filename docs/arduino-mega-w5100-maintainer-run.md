@@ -25,6 +25,7 @@ Finish one complete maintainer run that produces all of the following:
 - `scripts/prepare_mega_w5100_run.ps1`
 - `scripts/validate_board_run.py`
 - `scripts/finalize_board_run.py`
+- `scripts/file_board_run_issue.py`
 
 ## Suggested Working Folder
 
@@ -65,6 +66,7 @@ On Windows, `prepare_mega_w5100_run.ps1` also writes:
 - `render-report.ps1`
 - `validate-run.ps1`
 - `finalize-report.ps1`
+- `file-issue.ps1`
 
 Fallback manual directory creation is still fine if you do not want to use the helper.
 
@@ -167,7 +169,7 @@ Use this rule:
 - `partial`: some transport activity occurs, but connect or app delivery is incomplete
 - `fail`: the path does not reach a meaningful handshake or there is not enough evidence to review it
 
-## Step 6: File Or Prepare The Report
+## Step 6: Finalize The Report
 
 If you used the Windows fast path, prefer the one-command finalize helper:
 
@@ -186,10 +188,26 @@ python scripts/validate_board_run.py --run-id <run-id> --mode report
 
 Use the finalize step before filing the issue so placeholder text or missing evidence are caught locally.
 
-Use one of these:
+## Step 7: File The GitHub Issue
 
-- preferred: open a GitHub issue with `.github/ISSUE_TEMPLATE/board-bringup-report.md`
-- fallback: start from the generated `board-bringup-report.md` or fill a local draft using `docs/board-bringup-report-example.md` as the shape reference
+If you used the Windows fast path, the generated helper can open the issue directly after the report is finalized:
+
+```powershell
+.\logs\board-runs\<run-id>\file-issue.ps1
+```
+
+Equivalent raw commands:
+
+```powershell
+python scripts/file_board_run_issue.py --run-id <run-id>
+# preview only:
+python scripts/file_board_run_issue.py --run-id <run-id> --dry-run
+```
+
+Fallback if you do not want to use the helper:
+
+- open a GitHub issue with `.github/ISSUE_TEMPLATE/board-bringup-report.md`
+- start from the generated `board-bringup-report.md` or fill a local draft using `docs/board-bringup-report-example.md` as the shape reference
 
 When filing the report, attach or paste:
 
