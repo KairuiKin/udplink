@@ -18,6 +18,7 @@
 - 当前项目状态: `docs/project-status.md`
 - C API 快速开始: `docs/c-api-quickstart.md`
 - Arduino Mega W5100 bring-up: `docs/arduino-mega-w5100-bringup.md`
+- 构建、测试、安装与 API 概览以本 README 为准。
 
 ## 设计目标
 

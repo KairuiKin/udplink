@@ -1,8 +1,8 @@
 # Project Status
 
-Snapshot date: 2026-03-28.
+Snapshot date: 2026-03-30.
 
-This page is the short maintainer-facing read of where `udplink` stands right now, what is actually done, and what route should come next.
+This page is the short maintainer-facing read of where `udplink` stands right now, what is still unresolved, and what route should come next. Build, test, install, and API-entry details stay in `README.md` / `README.en.md`.
 
 ## Current Position
 
@@ -16,26 +16,17 @@ Current repository read:
 - the first narrow board-backed route is drafted around Arduino Mega 2560 + W5100 + PlatformIO + `rudp_example_udp_peer`, with an execution checklist and evidence template in `docs/arduino-mega-w5100-bringup.md`.
 - Rust work remains intentionally blocked until the ABI stability decision is finished.
 
-## Recently Completed
+## What Is Already Closed
 
-Recent work already landed in the repository:
+The repository is no longer blocked on first-pass implementation work:
 
-- minimal public C ABI header and wrapper
-- C ABI smoke test and installed-package C smoke consumer
-- maintained C API consumer example that builds against the installed package
-- CI and `scripts/release_check.py` coverage for the C ABI and installed-package C consumption
-- documentation for C ABI quickstart, compatibility, stability gate, current assessment, downstream-baseline decision, and decision playbook
-- doc-state consistency checker in `scripts/check_c_abi_docs.py`, wired into local release verification and CI
-- public C ABI surface snapshot in `docs/c-abi-surface-v1.json`, enforced by `scripts/check_c_abi_surface.py`
-- gate-evaluation helper in `scripts/evaluate_c_abi_gate.py` to separate technical readiness from unresolved governance promises
-- narrow PlatformIO scope definition instead of a broad unsupported matrix
-- drafted board bring-up guide for Arduino Mega 2560 + W5100, now structured as an execution checklist with acceptance criteria
-- maintainer-run pack and host-peer log capture helper for board-backed validation attempts
-- board-run workspace initializer that generates summary, serial-notes, and report-draft files
-- issue templates for board-backed validation reports and C ABI stability decisions
-- pull request template and contributing guide updated to reflect the current C ABI validation and governance flow
-- host-side UDP peer example wired into CMake as `rudp_example_udp_peer`
-- `ConnectionManager::Find()` repositioned as compatibility-only rather than a preferred new-code path
+- core C++ build/test paths work on Windows, Linux, and macOS
+- the minimal C ABI exists and is exercised by tests, installed-package consumers, and a maintained C example
+- install/export metadata, docs consistency checks, and C ABI surface snapshot checks already exist
+- the first narrow Arduino Mega 2560 + W5100 board path now has bring-up docs, a maintainer run pack, and evidence templates
+- release-style local verification already ties docs checks, build/test, install/export, and installed-package consumer checks together
+
+If you need build commands, installed-package usage, or API quick views, use `README.md` / `README.en.md`.
 
 ## What Is Still Open
 

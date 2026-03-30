@@ -18,6 +18,7 @@ Reliable UDP library for embedded and MCU-class targets (C++11), with fixed-memo
 - Current project status: `docs/project-status.md`
 - C API quickstart: `docs/c-api-quickstart.md`
 - Arduino Mega W5100 bring-up: `docs/arduino-mega-w5100-bringup.md`
+- Stay in this README for build, test, install, and API surface details.
 
 ## Goals
 
