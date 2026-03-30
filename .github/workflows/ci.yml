@@ -145,6 +145,12 @@ jobs:
       - name: Check C ABI surface baseline
         run: python scripts/check_c_abi_surface.py
 
+      - name: Render C ABI wait-state decision snapshot
+        run: |
+          python scripts/render_c_abi_decision_snapshot.py --decision wait --output build/c-abi-decision-snapshot.md
+          grep -F 'Requested decision: keep `wait`' build/c-abi-decision-snapshot.md
+          grep -F "stable-ready: no" build/c-abi-decision-snapshot.md
+
   # Code quality
   lint:
     runs-on: ubuntu-latest
