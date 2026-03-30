@@ -5,9 +5,9 @@ This directory contains reference templates for integrating `udplink` on embedde
 ## Scope
 
 - These examples are aligned with the current `rudp::Hooks` / `Endpoint::StartConnect()` API.
-- They are not built in the main CI pipeline.
+- They are not exercised as board-runtime targets in the main CI pipeline.
 - Treat them as integration templates: keep the udplink calls, replace the board-specific UDP and timer hooks.
-- STM32 and ESP32 templates now also have a host-side compile-only validation path in CI.
+- STM32 and ESP32 templates do have a host-side compile-only validation path in CI.
 
 ## Platform Matrix
 

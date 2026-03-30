@@ -42,13 +42,16 @@ The main unfinished items are now decision and validation items, not basic plumb
 
 Recommended order from here:
 
-1. Finish the C ABI stability decision.
-   - Use `docs/c-abi-stability-gate.md`, `docs/c-abi-stability-assessment.md`, and `docs/c-abi-downstream-baseline-decision.md` together.
-   - Either explicitly bless the maintained C consumer example and state that no near-term ABI break is expected, or keep the ABI in draft status on purpose.
+1. Keep the current validation baseline green.
+   - Keep Windows build, test, install-consume, and release-style checks aligned.
+   - Treat that path as the repository's strongest maintained validation route.
 2. Confirm one real board-backed path.
    - Use `docs/arduino-mega-w5100-bringup.md` as the first candidate path.
    - Treat success here as a proof point for embedded usability, not as a promise for every board family.
-3. Only after the ABI gate is met, start a Rust wrapper spike.
+3. Then decide whether the current C ABI should remain `wait` or intentionally move to `stable`.
+   - Use `docs/c-abi-stability-gate.md`, `docs/c-abi-stability-assessment.md`, and `docs/c-abi-downstream-baseline-decision.md` together.
+   - Either explicitly bless the maintained C consumer example and state that no near-term ABI break is expected, or keep the ABI in draft status on purpose.
+4. Only after the ABI gate is intentionally closed, start a Rust wrapper spike.
    - The wrapper must stay strictly on top of `rudp/rudp_c.h`.
    - Any missing pieces should feed back as focused ABI additions instead of bypassing the C layer.
 
