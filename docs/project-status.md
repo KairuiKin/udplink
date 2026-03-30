@@ -32,8 +32,8 @@ If you need build commands, installed-package usage, or API quick views, use `RE
 
 The main unfinished items are now decision and validation items, not basic plumbing:
 
-- the current C ABI is implemented, but it is not yet declared stable
-- maintainers have not yet blessed `examples/c_api/install_consume/` as the first supported downstream baseline
+- the current C ABI is implemented, but it is not yet declared stable, and the repository still treats `wait` as the official answer
+- maintainers have not yet blessed `examples/c_api/install_consume/` as the first supported downstream baseline, though the decision snapshot helper can now render the current governance state in one place
 - there is not yet an explicit no-break statement for the current v1 C ABI baseline
 - the Arduino Mega 2560 + W5100 bring-up path is execution-ready on paper, but not yet hardware-confirmed
 - broad PlatformIO, board-matrix, or Rust expansion should not start before the above items are resolved

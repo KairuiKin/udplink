@@ -41,6 +41,18 @@ Current recommended answer: keep `wait`.
 
 For a maintainer-facing record of that current answer, see `docs/c-abi-current-wait-decision-record.md`.
 
+Before opening or updating a maintainer decision issue, you can render a current snapshot with:
+
+```bash
+python scripts/render_c_abi_decision_snapshot.py --decision wait --output c-abi-decision-snapshot.md
+```
+
+For a stable candidate review, use the same helper with the matching governance flags:
+
+```bash
+python scripts/render_c_abi_decision_snapshot.py --decision stable --docs-mode stable --downstream-baseline-adopted --no-near-term-break --output c-abi-decision-snapshot.md
+```
+
 Reason:
 
 - the technical validation path is now strong enough, including a checked-in v1 surface snapshot

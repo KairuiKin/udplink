@@ -8,6 +8,12 @@ assignees: []
 
 ## Decision
 
+Optional helper before filling this issue:
+
+```bash
+python scripts/render_c_abi_decision_snapshot.py --decision wait --output c-abi-decision-snapshot.md
+```
+
 Choose one:
 
 - keep `wait`
