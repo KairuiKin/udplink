@@ -70,6 +70,7 @@ try {
     $validateRunScript = Join-Path $runDir 'validate-run.ps1'
     $finalizeReportScript = Join-Path $runDir 'finalize-report.ps1'
     $fileIssueScript = Join-Path $runDir 'file-issue.ps1'
+    $bundleArtifactsScript = Join-Path $runDir 'bundle-artifacts.ps1'
 
     Write-HelperScript -Path $hostPeerScript -BodyLines @(
         ('Set-Location ' + (Quote-PowerShell $repoRoot)),
@@ -103,6 +104,10 @@ try {
         ('Set-Location ' + (Quote-PowerShell $repoRoot)),
         ('python scripts/file_board_run_issue.py --run-id ' + (Quote-PowerShell $RunId))
     )
+    Write-HelperScript -Path $bundleArtifactsScript -BodyLines @(
+        ('Set-Location ' + (Quote-PowerShell $repoRoot)),
+        ('python scripts/bundle_board_run_artifacts.py --run-id ' + (Quote-PowerShell $RunId))
+    )
 
     $summaryPath = Join-Path $runDir 'run-summary.txt'
     if (Test-Path $summaryPath) {
@@ -113,7 +118,7 @@ try {
         $summary = $summary.Replace('Host IP / port:', "Host IP / port: $HostIp / $HostPort")
         $summary = $summary.Replace(
             'Notes:',
-            "Host peer helper script: $hostPeerScript`r`nBoard build helper script: $boardBuildScript`r`nBoard upload helper script: $boardUploadScript`r`nBoard monitor helper script: $boardMonitorScript`r`nReport render helper script: $renderReportScript`r`nReport finalize helper script: $finalizeReportScript`r`nIssue filing helper script: $fileIssueScript`r`nNotes:"
+            "Host peer helper script: $hostPeerScript`r`nBoard build helper script: $boardBuildScript`r`nBoard upload helper script: $boardUploadScript`r`nBoard monitor helper script: $boardMonitorScript`r`nReport render helper script: $renderReportScript`r`nReport finalize helper script: $finalizeReportScript`r`nIssue filing helper script: $fileIssueScript`r`nArtifact bundle helper script: $bundleArtifactsScript`r`nNotes:"
         )
         Set-Content $summaryPath $summary -Encoding utf8
     }
@@ -132,6 +137,7 @@ try {
     Write-Host "- $validateRunScript"
     Write-Host "- $finalizeReportScript"
     Write-Host "- $fileIssueScript"
+    Write-Host "- $bundleArtifactsScript"
     Write-Host ''
     if ($serialPorts.Count -gt 0) {
         Write-Host 'Detected serial ports:'
@@ -158,6 +164,7 @@ try {
     Write-Host '4. Run validate-run.ps1 to confirm the prepared run pack is coherent before hardware execution.'
     Write-Host '5. Run finalize-report.ps1 after updating the notes to render and validate board-bringup-report.md.'
     Write-Host '6. Run file-issue.ps1 after reviewing the report to open the GitHub issue.'
+    Write-Host '7. Run bundle-artifacts.ps1 to archive the evidence, preview, and helper scripts into one zip file.'
 }
 finally {
     Pop-Location

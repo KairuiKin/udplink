@@ -77,6 +77,7 @@ jobs:
           if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\validate-run.ps1)) { throw 'missing validate-run.ps1' }
           if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\finalize-report.ps1)) { throw 'missing finalize-report.ps1' }
           if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\file-issue.ps1)) { throw 'missing file-issue.ps1' }
+          if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\bundle-artifacts.ps1)) { throw 'missing bundle-artifacts.ps1' }
           if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\run-summary.txt)) { throw 'missing run-summary.txt' }
           powershell -ExecutionPolicy Bypass -File .\logs\board-runs\ci-prepare-smoke\validate-run.ps1
           $summary = @(
@@ -128,6 +129,10 @@ jobs:
           if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\board-bringup-report.md)) { throw 'missing board-bringup-report.md' }
           python scripts/file_board_run_issue.py --run-id ci-prepare-smoke --dry-run > $env:RUNNER_TEMP\board-issue-preview.txt
           if (-not (Select-String -Path $env:RUNNER_TEMP\board-issue-preview.txt -Pattern '^Title: board: bring-up report for ' -Quiet)) { throw 'missing derived issue title' }
+          powershell -ExecutionPolicy Bypass -File .\logs\board-runs\ci-prepare-smoke\bundle-artifacts.ps1
+          if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\board-bringup-issue-preview.md)) { throw 'missing board-bringup-issue-preview.md' }
+          if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\board-run-artifact-manifest.md)) { throw 'missing board-run-artifact-manifest.md' }
+          if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\board-run-artifacts.zip)) { throw 'missing board-run-artifacts.zip' }
 
   docs-consistency:
     runs-on: ubuntu-latest
