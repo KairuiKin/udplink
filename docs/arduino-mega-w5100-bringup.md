@@ -115,6 +115,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\prepare_mega_w5100_run.ps1
 .\logs\board-runs\<run-id>\start-host-peer.ps1
 # after a real run:
 .\logs\board-runs\<run-id>\finalize-report.ps1
+.\logs\board-runs\<run-id>\file-issue.ps1
 ```
 
 ### Linux / macOS
@@ -225,7 +226,8 @@ That check does not prove board success. It only proves that the run folder, hel
 ## Evidence Record Template
 
 Copy this block into an issue, PR comment, or maintainer note when a real run is performed.
-If you want a repository-native path, open a GitHub issue with the `Board Bring-Up Report` template in `.github/ISSUE_TEMPLATE/board-bringup-report.md`.
+If you used the Windows maintainer fast path, `.\logs\board-runs\<run-id>\file-issue.ps1` can open the repository-native issue for you after the report is finalized.
+Otherwise, open a GitHub issue with the `Board Bring-Up Report` template in `.github/ISSUE_TEMPLATE/board-bringup-report.md`.
 See `docs/board-bringup-report-example.md` for a filled example of the expected report shape.
 
 ```text

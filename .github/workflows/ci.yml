@@ -76,6 +76,7 @@ jobs:
           if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\render-report.ps1)) { throw 'missing render-report.ps1' }
           if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\validate-run.ps1)) { throw 'missing validate-run.ps1' }
           if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\finalize-report.ps1)) { throw 'missing finalize-report.ps1' }
+          if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\file-issue.ps1)) { throw 'missing file-issue.ps1' }
           if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\run-summary.txt)) { throw 'missing run-summary.txt' }
           powershell -ExecutionPolicy Bypass -File .\logs\board-runs\ci-prepare-smoke\validate-run.ps1
           $summary = @(
@@ -125,6 +126,8 @@ jobs:
           Set-Content .\logs\board-runs\ci-prepare-smoke\board-bringup-report-draft.md -Value $draft -Encoding utf8
           powershell -ExecutionPolicy Bypass -File .\logs\board-runs\ci-prepare-smoke\finalize-report.ps1
           if (-not (Test-Path .\logs\board-runs\ci-prepare-smoke\board-bringup-report.md)) { throw 'missing board-bringup-report.md' }
+          python scripts/file_board_run_issue.py --run-id ci-prepare-smoke --dry-run > $env:RUNNER_TEMP\board-issue-preview.txt
+          if (-not (Select-String -Path $env:RUNNER_TEMP\board-issue-preview.txt -Pattern '^Title: board: bring-up report for ' -Quiet)) { throw 'missing derived issue title' }
 
   docs-consistency:
     runs-on: ubuntu-latest
