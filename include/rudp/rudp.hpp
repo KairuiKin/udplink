@@ -257,6 +257,7 @@ private:
     bool has_peer_session_id_;
     ConnectionState conn_state_;
     bool ack_dirty_;
+    uint16_t pending_send_count_;
 
     PacketSlot send_slots_[kMaxQueue];
     RecvSlot recv_slots_[kMaxQueue];

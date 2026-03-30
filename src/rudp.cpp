@@ -492,6 +492,7 @@ void Endpoint::Disconnect() {
     pending_tx_key_acknowledged_ = false;
     peer_key_rotation_known_ = false;
     ack_dirty_ = false;
+    pending_send_count_ = 0;
     for (uint16_t i = 0; i < kMaxQueue; ++i) {
         send_slots_[i].used = false;
         recv_slots_[i].used = false;
@@ -527,7 +528,7 @@ Endpoint::PacketSlot* Endpoint::AllocateSendSlot(uint16_t* inflight_count) {
         }
     }
     if (inflight_count) {
-        *inflight_count = inflight;
+        *inflight_count = pending_send_count_;
     }
     return free_slot;
 }
@@ -827,11 +828,15 @@ SendStatus Endpoint::Send(const uint8_t* payload, uint16_t len) {
     slot->frame_len = 0;
     slot->last_sent_ms = 0;
     slot->ext_payload = 0;
+    ++pending_send_count_;
 
     const uint16_t seq = next_send_seq_;
     ++next_send_seq_;
     if (!BuildDataFrame(slot, seq, payload, len, false)) {
         slot->used = false;
+        if (pending_send_count_ > 0) {
+            --pending_send_count_;
+        }
         Unlock();
         return SendStatus::kPayloadTooLarge;
     }
@@ -882,11 +887,15 @@ SendStatus Endpoint::SendZeroCopy(const uint8_t* payload, uint16_t len) {
     slot->frame_len = 0;
     slot->last_sent_ms = 0;
     slot->ext_payload = 0;
+    ++pending_send_count_;
 
     const uint16_t seq = next_send_seq_;
     ++next_send_seq_;
     if (!BuildDataFrame(slot, seq, payload, len, true)) {
         slot->used = false;
+        if (pending_send_count_ > 0) {
+            --pending_send_count_;
+        }
         Unlock();
         return SendStatus::kPayloadTooLarge;
     }
@@ -940,6 +949,9 @@ void Endpoint::HandleAck(uint16_t ack, uint32_t ack_bits) {
             }
             slot->acked = true;
             slot->used = false;
+            if (pending_send_count_ > 0) {
+                --pending_send_count_;
+            }
             ++stats_.tx_acks;
             any_new_acked = true;
         }
@@ -984,6 +996,9 @@ void Endpoint::FastRetransmit(uint32_t now_ms) {
     }
     if (victim->retries >= cfg_.max_retransmits) {
         victim->used = false;
+        if (pending_send_count_ > 0) {
+            --pending_send_count_;
+        }
         return;
     }
     ++victim->retries;
@@ -1375,6 +1390,9 @@ void Endpoint::Tick() {
         }
         if (slot->retries >= cfg_.max_retransmits) {
             slot->used = false;
+            if (pending_send_count_ > 0) {
+                --pending_send_count_;
+            }
             continue;
         }
         ++slot->retries;
@@ -1386,23 +1404,12 @@ void Endpoint::Tick() {
 }
 
 uint16_t Endpoint::GetPendingSend() const {
-    uint16_t n = 0;
-    for (uint16_t i = 0; i < kMaxQueue; ++i) {
-        if (send_slots_[i].used && !send_slots_[i].acked) {
-            ++n;
-        }
-    }
-    return n;
+    return pending_send_count_;
 }
 
 RuntimeMetrics Endpoint::GetRuntimeMetrics() const {
     RuntimeMetrics m;
-    m.pending_send = 0;
-    for (uint16_t i = 0; i < kMaxQueue; ++i) {
-        if (send_slots_[i].used && !send_slots_[i].acked) {
-            ++m.pending_send;
-        }
-    }
+    m.pending_send = pending_send_count_;
     m.rto_ms = rto_ms_;
     m.smoothed_rtt_ms = smoothed_rtt_;
     m.rtt_var_ms = rtt_var_;
