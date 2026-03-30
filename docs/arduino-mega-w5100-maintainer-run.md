@@ -26,6 +26,7 @@ Finish one complete maintainer run that produces all of the following:
 - `scripts/validate_board_run.py`
 - `scripts/finalize_board_run.py`
 - `scripts/file_board_run_issue.py`
+- `scripts/bundle_board_run_artifacts.py`
 
 ## Suggested Working Folder
 
@@ -67,6 +68,7 @@ On Windows, `prepare_mega_w5100_run.ps1` also writes:
 - `validate-run.ps1`
 - `finalize-report.ps1`
 - `file-issue.ps1`
+- `bundle-artifacts.ps1`
 
 Fallback manual directory creation is still fine if you do not want to use the helper.
 
@@ -208,6 +210,22 @@ Fallback if you do not want to use the helper:
 
 - open a GitHub issue with `.github/ISSUE_TEMPLATE/board-bringup-report.md`
 - start from the generated `board-bringup-report.md` or fill a local draft using `docs/board-bringup-report-example.md` as the shape reference
+
+## Step 8: Archive Or Hand Off The Run
+
+If you want a single handoff artifact after the report is finalized, use the generated bundle helper:
+
+```powershell
+.\logs\board-runs\<run-id>\bundle-artifacts.ps1
+```
+
+Equivalent raw commands:
+
+```powershell
+python scripts/bundle_board_run_artifacts.py --run-id <run-id>
+```
+
+This refreshes the rendered report, writes `board-bringup-issue-preview.md`, writes `board-run-artifact-manifest.md`, and packs the evidence plus generated helper scripts into `board-run-artifacts.zip`.
 
 When filing the report, attach or paste:
 
