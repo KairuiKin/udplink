@@ -26,7 +26,7 @@ Reliable UDP library for embedded and MCU-class targets (C++11), with fixed-memo
 - MCU-friendly operation: fixed memory, no protocol hot-path heap allocation, no thread requirement.
 - Production-oriented integration via pluggable hooks, configurable retransmission/window behavior, and runtime stats.
 
-## Core design
+## Core capabilities
 
 - Protocol core is decoupled from socket I/O using callbacks:
   - current time (`now_ms`)
@@ -43,7 +43,7 @@ Reliable UDP library for embedded and MCU-class targets (C++11), with fixed-memo
 - Optional authentication (SipHash-2-4) and online key rotation.
 - Zero-copy send path via `SendZeroCopy` + `send_raw_vec`.
 
-## Layout
+## Repository layout
 
 - `include/rudp/rudp.hpp`: C++ endpoint API
 - `include/rudp/manager.hpp`: multi-connection manager API
@@ -82,7 +82,7 @@ The repository currently treats the following as the practical Windows completio
 2. `ctest --test-dir build -C Release --output-on-failure` passes
 3. installed-package consumers configure, build, and run successfully
 
-## Install and consume
+## Install and downstream consumption
 
 ```bash
 cmake -S . -B build-install -DRUDP_INSTALL=ON -DRUDP_BUILD_TESTS=OFF -DRUDP_BUILD_EXAMPLES=OFF
@@ -96,7 +96,7 @@ Installed output includes:
 - `rudp.pc`
 - public headers, including `include/rudp/rudp_c.h`
 
-## Installed-package consumer checks
+## Installed-package downstream checks
 
 ### Unix-like
 
@@ -153,7 +153,7 @@ Embedded reference templates:
 - `examples/raspberry_pi/raspberry_pi_udp.cpp`
 - `examples/arduino/arduino_udp/arduino_udp.ino`
 
-Maintained C installed-package example:
+C API installed-package example:
 
 - `examples/c_api/install_consume/main.c`
 
@@ -182,7 +182,7 @@ This script chains together:
 
 ## C ABI position
 
-The key repository position today is:
+The key repository position right now is:
 
 - the C ABI is implemented
 - the C ABI is exercised by tests and installed-package consumers

@@ -41,7 +41,7 @@
 - `SendZeroCopy` + `send_raw_vec` 零拷贝发送路径
 - 最小 C ABI 包装层，供 C / FFI / 后续 Rust 方向使用
 
-## 目录
+## 仓库布局
 
 - `include/rudp/rudp.hpp`: C++ 公共端点 API
 - `include/rudp/manager.hpp`: 多连接管理器 API
@@ -84,7 +84,7 @@ ctest --test-dir build -C Release --output-on-failure
 - `rudp_c_api_test`
 - `rudp_bench`
 
-## 安装与下游消费
+## 安装与下游消费路径
 
 ### 安装导出
 
@@ -155,13 +155,13 @@ cmake --build build-example-c-api --config Release
 - `examples/raspberry_pi/raspberry_pi_udp.cpp`
 - `examples/arduino/arduino_udp/arduino_udp.ino`
 
-C API 参考消费示例：
+C API 安装消费示例：
 
 - `examples/c_api/install_consume/main.c`
 
 ## C ABI 现状
 
-当前最重要的状态约束是：
+当前仓库在 C ABI 上的关键立场是：
 
 - C ABI 已实现并已进入测试、安装消费和维护示例路径。
 - 但仓库当前还没有正式宣布它是长期稳定 ABI。
