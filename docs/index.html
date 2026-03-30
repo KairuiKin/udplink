@@ -336,36 +336,36 @@
 
         <section class="section">
             <h2>Current Repository Read</h2>
-            <p class="section-copy">These four points capture the current project reality better than a long maintainer status paragraph on the homepage.</p>
+            <p class="section-copy">The homepage should not repeat the full repository README or the maintainer status page. Use this section to decide which document holds the detail you actually need.</p>
             <div class="stat-row">
-                <div class="stat"><strong>Core validation</strong><span>Windows / Linux / macOS are green</span></div>
+                <div class="stat"><strong>README</strong><span>build, test, install, and API surface</span></div>
+                <div class="stat"><strong>Project Status</strong><span>current blockers, route, and decision posture</span></div>
                 <div class="stat"><strong>C ABI</strong><span>implemented, but intentionally still wait</span></div>
-                <div class="stat"><strong>Packaging</strong><span>C++ and C consumers are covered</span></div>
                 <div class="stat"><strong>Board path</strong><span>run pack is ready, hardware evidence still missing</span></div>
             </div>
             <div class="grid grid-3">
                 <div class="card">
-                    <h3>What is already in place</h3>
+                    <h3>Read the repository guide</h3>
                     <ul>
-                        <li>The C++ protocol core builds and tests on Windows, Linux, and macOS.</li>
-                        <li>The minimal C ABI is exercised by smoke tests, install-consume checks, and a maintained in-repo C example.</li>
-                        <li>The repository has a release-style validation chain with docs checks, surface checks, and install/export verification.</li>
+                        <li><a href="https://github.com/KairuiKin/udplink/blob/master/README.en.md">README.en</a>: build, test, install, and public API quick views.</li>
+                        <li><a href="https://github.com/KairuiKin/udplink/blob/master/README.md">README</a>: the fuller Chinese repository guide.</li>
+                        <li>Use these files when you want commands and supported consumer paths rather than governance status.</li>
                     </ul>
                 </div>
                 <div class="card">
-                    <h3>What is intentionally conservative</h3>
+                    <h3>Read the current project state</h3>
                     <ul>
-                        <li>The current C ABI is still in <code>wait</code>, not because it lacks implementation, but because the governance promises are not finished.</li>
-                        <li><code>examples/c_api/install_consume/</code> is maintained evidence, but it has not yet been formally adopted as the first supported downstream baseline.</li>
-                        <li>PlatformIO remains an Arduino-first narrow path instead of a broad embedded support promise.</li>
+                        <li><a href="guide.html#/project-status">Project Status</a>: what is already closed, what is still open, and what should happen next.</li>
+                        <li><a href="guide.html#/c-api-quickstart">C API Quickstart</a>: the currently supported public C entry points.</li>
+                        <li>Use these pages when you need the current decision posture rather than the full repository tour.</li>
                     </ul>
                 </div>
                 <div class="card">
-                    <h3>What is most valuable next</h3>
+                    <h3>Read the narrow follow-up paths</h3>
                     <ul>
-                        <li>Keep Windows build, test, and install-consume checks green.</li>
-                        <li>Capture one real Arduino Mega 2560 + W5100 evidence run.</li>
-                        <li>Keep the current v1 ABI unchanged until maintainers intentionally close the downstream-baseline and no-break questions.</li>
+                        <li><a href="guide.html#/arduino-mega-w5100-bringup">Board Bring-Up</a>: the first board-backed validation route.</li>
+                        <li><a href="guide.html#/drafts-and-records">Drafts and Records</a>: release notes, decision helpers, and maintainer-only history.</li>
+                        <li><a href="guide.html#/benchmarks">Benchmarks</a>: measured history instead of homepage summary bullets.</li>
                     </ul>
                 </div>
             </div>
