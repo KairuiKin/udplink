@@ -111,6 +111,7 @@ Maintainer fast path:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\prepare_mega_w5100_run.ps1
+.\logs\board-runs\<run-id>\validate-run.ps1
 .\logs\board-runs\<run-id>\start-host-peer.ps1
 ```
 
@@ -207,6 +208,17 @@ Treat this path as maintainer-confirmed only if all of the following are true in
 - the operator captured enough evidence that another maintainer could review the run without guesswork
 
 If any of those conditions are missing, the path should stay in drafted status even if some packets moved.
+
+## No-Device Readiness Check
+
+Even without hardware connected yet, you can still prove that the repository-side run pack is coherent:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\prepare_mega_w5100_run.ps1
+.\logs\board-runs\<run-id>\validate-run.ps1
+```
+
+That check does not prove board success. It only proves that the run folder, helper scripts, and summary/report templates are ready for a real maintainer run.
 
 ## Evidence Record Template
 
