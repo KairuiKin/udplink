@@ -205,7 +205,7 @@ private:
     uint16_t DistanceFrom(uint16_t older, uint16_t newer) const;
     PacketSlot* FindSendSlotBySeq(uint16_t seq);
     RecvSlot* FindRecvSlotBySeq(uint16_t seq);
-    PacketSlot* AllocateSendSlot();
+    PacketSlot* AllocateSendSlot(uint16_t* inflight_count);
     RecvSlot* AllocateRecvSlot();
     void MaybeAdjustRto(uint32_t sample_ms);
 
