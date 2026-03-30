@@ -57,6 +57,8 @@ Implications:
 
 Recommendation today: choose Option B for now.
 
+The broader maintainer-facing record for that current repository answer lives in `docs/c-abi-current-wait-decision-record.md`.
+
 Why:
 
 - technical validation is already strong enough to support the example as evidence
