@@ -176,6 +176,34 @@ C API 参考消费示例：
 - `docs/c-abi-downstream-baseline-decision.md`
 - `docs/c-abi-stability-decision-playbook.md`
 
+## API 快速概览
+
+1. `rudp::Endpoint::Init(config, hooks)` 用于初始化端点。
+2. `rudp::Endpoint::StartConnect()` 用于主动发起握手。
+3. `rudp::Endpoint::Send(data, len)` 在连接建立后发送可靠消息。
+4. `rudp::Endpoint::SendZeroCopy(data, len)` 在 `send_raw_vec` 可用时避免额外 payload 拷贝。
+5. 每个入站 UDP datagram 都应交给 `OnUdpPacket(data, len)`。
+6. 周期性调用 `Tick()` 以驱动重传、心跳、pacing 和 ACK flush。
+7. 使用 `Endpoint::GetRuntimeMetrics()` 查看队列、RTO、RTT、重传和丢弃指标。
+
+## Manager API 快速概览
+
+1. `rudp::ConnectionManager::Init(config, hooks)` 用于初始化多连接路由。
+2. `Open(key, start_connect)` 创建或查找带 key 的端点，`Remove(key)` 用于关闭它。
+3. `OnUdpPacket(key, data, len)` 按 session key 路由入站 datagram。
+4. 新代码应优先使用 manager 级别的 send/query API。
+5. `Open()/Find()` 返回的 `Endpoint*` 仍然是兼容性逃生口，而不是长期推荐方向。
+
+## C API 快速概览
+
+1. 使用 `#include <rudp/rudp_c.h>` 引入最小 C ABI 接口。
+2. 用 `rudp_default_config_v1()` 或 `rudp_config_for_profile_v1()` 初始化配置。
+3. 在 `rudp_endpoint_init()` 之前先调用 `rudp_endpoint_create()`。
+4. 通过 `rudp_endpoint_start_connect()` 和 `rudp_endpoint_tick()` 驱动握手与定时逻辑。
+5. 通过 `rudp_endpoint_on_udp_packet()` 喂入入站 UDP datagram。
+6. 使用 `rudp_endpoint_send()` 发送数据。
+7. 通过公开的 C getter 查询状态与运行时指标。
+
 ## PlatformIO / 嵌入式现状
 
 - PlatformIO 当前只提供一条窄路径：Arduino Mega 2560 + W5100。
