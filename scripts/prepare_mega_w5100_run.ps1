@@ -68,6 +68,7 @@ try {
     $boardMonitorScript = Join-Path $runDir 'monitor-board.ps1'
     $renderReportScript = Join-Path $runDir 'render-report.ps1'
     $validateRunScript = Join-Path $runDir 'validate-run.ps1'
+    $finalizeReportScript = Join-Path $runDir 'finalize-report.ps1'
 
     Write-HelperScript -Path $hostPeerScript -BodyLines @(
         ('Set-Location ' + (Quote-PowerShell $repoRoot)),
@@ -92,6 +93,10 @@ try {
     Write-HelperScript -Path $validateRunScript -BodyLines @(
         ('Set-Location ' + (Quote-PowerShell $repoRoot)),
         ('python scripts/validate_board_run.py --run-id ' + (Quote-PowerShell $RunId) + ' --mode preflight')
+    )
+    Write-HelperScript -Path $finalizeReportScript -BodyLines @(
+        ('Set-Location ' + (Quote-PowerShell $repoRoot)),
+        ('python scripts/finalize_board_run.py --run-id ' + (Quote-PowerShell $RunId))
     )
 
     $summaryPath = Join-Path $runDir 'run-summary.txt'
@@ -120,6 +125,7 @@ try {
     Write-Host "- $boardMonitorScript"
     Write-Host "- $renderReportScript"
     Write-Host "- $validateRunScript"
+    Write-Host "- $finalizeReportScript"
     Write-Host ''
     if ($serialPorts.Count -gt 0) {
         Write-Host 'Detected serial ports:'
@@ -144,7 +150,7 @@ try {
     Write-Host '2. Run build-board.ps1 and upload-board.ps1 in another PowerShell window.'
     Write-Host '3. Run monitor-board.ps1 and paste key serial lines into the run directory notes.'
     Write-Host '4. Run validate-run.ps1 to confirm the prepared run pack is coherent before hardware execution.'
-    Write-Host '5. Run render-report.ps1 after updating the notes to produce board-bringup-report.md.'
+    Write-Host '5. Run finalize-report.ps1 after updating the notes to render and validate board-bringup-report.md.'
 }
 finally {
     Pop-Location

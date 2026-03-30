@@ -113,6 +113,8 @@ Maintainer fast path:
 powershell -ExecutionPolicy Bypass -File .\scripts\prepare_mega_w5100_run.ps1
 .\logs\board-runs\<run-id>\validate-run.ps1
 .\logs\board-runs\<run-id>\start-host-peer.ps1
+# after a real run:
+.\logs\board-runs\<run-id>\finalize-report.ps1
 ```
 
 ### Linux / macOS

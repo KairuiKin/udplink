@@ -24,6 +24,7 @@ Finish one complete maintainer run that produces all of the following:
 - `scripts/init_board_run.py`
 - `scripts/prepare_mega_w5100_run.ps1`
 - `scripts/validate_board_run.py`
+- `scripts/finalize_board_run.py`
 
 ## Suggested Working Folder
 
@@ -63,6 +64,7 @@ On Windows, `prepare_mega_w5100_run.ps1` also writes:
 - `monitor-board.ps1`
 - `render-report.ps1`
 - `validate-run.ps1`
+- `finalize-report.ps1`
 
 Fallback manual directory creation is still fine if you do not want to use the helper.
 
@@ -167,20 +169,22 @@ Use this rule:
 
 ## Step 6: File Or Prepare The Report
 
-If you used the Windows fast path, you can render the current run directory into an issue-shaped markdown file with:
+If you used the Windows fast path, prefer the one-command finalize helper:
 
 ```powershell
-.\logs\board-runs\<run-id>\render-report.ps1
+.\logs\board-runs\<run-id>\finalize-report.ps1
 ```
 
 Equivalent raw commands:
 
 ```powershell
+python scripts/finalize_board_run.py --run-id <run-id>
+# equivalent expanded form:
 python scripts/render_board_run_report.py --run-id <run-id>
 python scripts/validate_board_run.py --run-id <run-id> --mode report
 ```
 
-Use `validate_board_run.py --mode report` before filing the issue so placeholder text or missing evidence are caught locally.
+Use the finalize step before filing the issue so placeholder text or missing evidence are caught locally.
 
 Use one of these:
 
