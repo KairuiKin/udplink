@@ -120,6 +120,22 @@ cmake --build build-consume-c --config Release
 cmake --build build-example-c-api --config Release
 ```
 
+## Windows completion definition
+
+On Windows, these paths have already been exercised in this repository:
+
+- `ctest --test-dir build -C Release --output-on-failure`
+- `tests/install_consume`
+- `tests/install_consume_c`
+- `examples/c_api/install_consume`
+- the key validation chain in `python scripts/release_check.py`
+
+If you only care about the main Windows route, treat these as the minimum done definition:
+
+1. the main project builds in `Release`
+2. `ctest --test-dir build -C Release --output-on-failure` is fully green
+3. all three install-consume paths configure, build, and run
+
 ## Examples
 
 Desktop examples:
@@ -141,14 +157,28 @@ Maintained C installed-package example:
 
 - `examples/c_api/install_consume/main.c`
 
-Embedded examples are reference templates, not broad CI-backed platform guarantees.
-The first narrow board-backed route is documented in `docs/arduino-mega-w5100-bringup.md`.
+## PlatformIO / embedded position
 
-For release-style local validation, use:
+- PlatformIO currently stays on one narrow route: Arduino Mega 2560 + W5100.
+- That route already has local build support, but it is not a broad embedded support promise.
+- The first board-backed bring-up execution docs live in:
+  - `docs/arduino-mega-w5100-bringup.md`
+  - `docs/arduino-mega-w5100-maintainer-run.md`
+
+## One-command local release check
 
 ```bash
 python scripts/release_check.py
 ```
+
+This script chains together:
+
+- docs snippet sync
+- C ABI doc-state checks
+- main project build and test
+- install/export validation
+- C / C++ install-consume checks
+- the maintained C API consumer example
 
 ## C ABI position
 
