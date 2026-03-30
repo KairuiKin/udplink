@@ -511,22 +511,25 @@ bool Endpoint::SeqInWindow(uint16_t seq, uint16_t start, uint16_t window) const 
     return DistanceFrom(start, seq) < window;
 }
 
-Endpoint::PacketSlot* Endpoint::AllocateSendSlot() {
+Endpoint::PacketSlot* Endpoint::AllocateSendSlot(uint16_t* inflight_count) {
+    PacketSlot* free_slot = 0;
+    uint16_t inflight = 0;
     for (uint16_t i = 0; i < kMaxQueue; ++i) {
-        if (!send_slots_[i].used) {
-            send_slots_[i].used = true;
-            send_slots_[i].acked = false;
-            send_slots_[i].ever_sent = false;
-            send_slots_[i].zero_copy = false;
-            send_slots_[i].retries = 0;
-            send_slots_[i].payload_len = 0;
-            send_slots_[i].frame_len = 0;
-            send_slots_[i].last_sent_ms = 0;
-            send_slots_[i].ext_payload = 0;
-            return &send_slots_[i];
+        PacketSlot* slot = &send_slots_[i];
+        if (slot->used) {
+            if (!slot->acked) {
+                ++inflight;
+            }
+            continue;
+        }
+        if (!free_slot) {
+            free_slot = slot;
         }
     }
-    return 0;
+    if (inflight_count) {
+        *inflight_count = inflight;
+    }
+    return free_slot;
 }
 
 Endpoint::RecvSlot* Endpoint::AllocateRecvSlot() {
@@ -804,21 +807,26 @@ SendStatus Endpoint::Send(const uint8_t* payload, uint16_t len) {
     }
 
     uint16_t inflight = 0;
-    for (uint16_t i = 0; i < kMaxQueue; ++i) {
-        if (send_slots_[i].used && !send_slots_[i].acked) {
-            ++inflight;
-        }
-    }
+    PacketSlot* slot = AllocateSendSlot(&inflight);
     if (inflight >= cfg_.send_window) {
         Unlock();
         return SendStatus::kQueueFull;
     }
 
-    PacketSlot* slot = AllocateSendSlot();
     if (!slot) {
         Unlock();
         return SendStatus::kQueueFull;
     }
+
+    slot->used = true;
+    slot->acked = false;
+    slot->ever_sent = false;
+    slot->zero_copy = false;
+    slot->retries = 0;
+    slot->payload_len = 0;
+    slot->frame_len = 0;
+    slot->last_sent_ms = 0;
+    slot->ext_payload = 0;
 
     const uint16_t seq = next_send_seq_;
     ++next_send_seq_;
@@ -854,21 +862,26 @@ SendStatus Endpoint::SendZeroCopy(const uint8_t* payload, uint16_t len) {
     }
 
     uint16_t inflight = 0;
-    for (uint16_t i = 0; i < kMaxQueue; ++i) {
-        if (send_slots_[i].used && !send_slots_[i].acked) {
-            ++inflight;
-        }
-    }
+    PacketSlot* slot = AllocateSendSlot(&inflight);
     if (inflight >= cfg_.send_window) {
         Unlock();
         return SendStatus::kQueueFull;
     }
 
-    PacketSlot* slot = AllocateSendSlot();
     if (!slot) {
         Unlock();
         return SendStatus::kQueueFull;
     }
+
+    slot->used = true;
+    slot->acked = false;
+    slot->ever_sent = false;
+    slot->zero_copy = false;
+    slot->retries = 0;
+    slot->payload_len = 0;
+    slot->frame_len = 0;
+    slot->last_sent_ms = 0;
+    slot->ext_payload = 0;
 
     const uint16_t seq = next_send_seq_;
     ++next_send_seq_;
